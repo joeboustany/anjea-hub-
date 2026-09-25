@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anjea Boutique · Hub</title>
+  <title>Anjea Boutique · Hub & Invoices</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>body { background:#FAF7F2; font-family:system-ui,sans-serif; }</style>
+  <style>body { background:#FAF7F2; font-family:system-ui,-apple-system,sans-serif; }</style>
 </head>
 <body class="text-stone-800 text-xs">
 
@@ -13,7 +13,7 @@
   <div id="pinBox" class="fixed inset-0 bg-[#3A0B16] z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xs w-full p-6 text-center shadow-xl space-y-4">
       <div class="w-12 h-12 rounded-full bg-[#511322] mx-auto flex items-center justify-center text-[#C5A880] text-xl font-bold">A</div>
-      <div><h2 class="text-lg font-bold text-[#511322]">ANJÉA BOUTIQUE</h2><p class="text-[10px] text-stone-400">Operations & Finance Hub</p></div>
+      <div><h2 class="text-lg font-bold text-[#511322]">ANJÉA BOUTIQUE</h2><p class="text-[10px] text-stone-400">Portal & Invoice Vault</p></div>
       <input type="password" id="pinInput" placeholder="PIN: 1985" maxlength="6" class="w-full text-center text-xl py-2 border rounded-xl" onkeyup="if(event.key==='Enter')unlock()">
       <p id="pinErr" class="text-red-500 hidden">Incorrect PIN</p>
       <button onclick="unlock()" class="w-full py-2.5 bg-[#511322] text-white font-bold rounded-xl shadow">Unlock</button>
@@ -31,14 +31,15 @@
     </div>
     <nav class="max-w-5xl mx-auto px-4 flex gap-1 border-t border-white/10 text-xs overflow-x-auto">
       <button onclick="goTab('dash')" id="btn-dash" class="py-2 px-3 border-b-2 border-[#C5A880] text-[#C5A880] font-bold">Dashboard</button>
-      <button onclick="goTab('stock')" id="btn-stock" class="py-2 px-3 border-b-2 border-transparent text-white/70">Stock</button>
+      <button onclick="goTab('stock')" id="btn-stock" class="py-2 px-3 border-b-2 border-transparent text-white/70">Stock & Purchases</button>
       <button onclick="goTab('sales')" id="btn-sales" class="py-2 px-3 border-b-2 border-transparent text-white/70">Sales</button>
-      <button onclick="goTab('exp')" id="btn-exp" class="py-2 px-3 border-b-2 border-transparent text-white/70">Expenses</button>
+      <button onclick="goTab('exp')" id="btn-exp" class="py-2 px-3 border-b-2 border-transparent text-white/70">Expenses & Invoices</button>
       <button onclick="goTab('set')" id="btn-set" class="py-2 px-3 border-b-2 border-transparent text-white/70">Settings</button>
     </nav>
   </header>
 
   <main class="max-w-5xl mx-auto p-4 space-y-4">
+
     <!-- DASHBOARD -->
     <section id="view-dash" class="space-y-4">
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -48,7 +49,6 @@
         <div class="bg-white p-3 rounded-xl border"><div class="text-stone-400">Per Partner (50%)</div><div id="kpi-split" class="text-lg font-bold text-[#C5A880] mt-1">$0</div><div class="text-stone-400">2 partners pool</div></div>
       </div>
 
-      <!-- Recovery Progress -->
       <div class="bg-white p-3 rounded-xl border">
         <div class="flex justify-between font-bold mb-1"><span>$15,000 Capital Recovery (401 pcs Target)</span><span id="rec-pct" class="text-[#511322]">0%</span></div>
         <div class="w-full bg-stone-100 h-2.5 rounded-full overflow-hidden"><div id="rec-bar" class="bg-[#511322] h-full" style="width:0%"></div></div>
@@ -67,16 +67,16 @@
           </div>
           <div class="flex gap-2 pt-2 border-t">
             <button onclick="openM('modalSale')" class="flex-1 py-2 bg-[#511322] text-white font-bold rounded-lg">+ Sale</button>
-            <button onclick="openM('modalExp')" class="flex-1 py-2 bg-stone-100 border font-bold rounded-lg">+ Expense</button>
+            <button onclick="openM('modalExp')" class="flex-1 py-2 bg-stone-100 border font-bold rounded-lg">+ Invoice / Expense</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- STOCK -->
+    <!-- STOCK & PURCHASES -->
     <section id="view-stock" class="space-y-3 hidden">
-      <div class="flex justify-between items-center"><h3 class="font-bold text-base">Purchases & Stock</h3><button onclick="openM('modalProd')" class="bg-[#511322] text-white font-bold px-3 py-1.5 rounded-lg">+ Add Item</button></div>
-      <div class="bg-white rounded-xl border overflow-x-auto"><table class="w-full text-left"><thead class="bg-stone-50 border-b text-stone-500"><tr><th class="p-2">Item</th><th class="p-2">Units</th><th class="p-2">Cost</th><th class="p-2">Landed</th><th class="p-2">Price</th><th class="p-2">Margin</th><th class="p-2">Sold</th><th class="p-2">Stock</th><th class="p-2 text-right">✕</th></tr></thead><tbody id="tblStock" class="divide-y"></tbody></table></div>
+      <div class="flex justify-between items-center"><h3 class="font-bold text-base">Purchases & Stock</h3><button onclick="openM('modalProd')" class="bg-[#511322] text-white font-bold px-3 py-1.5 rounded-lg">+ Add Purchase Item</button></div>
+      <div class="bg-white rounded-xl border overflow-x-auto"><table class="w-full text-left"><thead class="bg-stone-50 border-b text-stone-500"><tr><th class="p-2">Item</th><th class="p-2">Units</th><th class="p-2">Cost</th><th class="p-2">Landed</th><th class="p-2">Price</th><th class="p-2">Margin</th><th class="p-2">Sold</th><th class="p-2">Stock</th><th class="p-2">Invoice</th><th class="p-2 text-right">✕</th></tr></thead><tbody id="tblStock" class="divide-y"></tbody></table></div>
     </section>
 
     <!-- SALES -->
@@ -85,10 +85,16 @@
       <div class="bg-white rounded-xl border overflow-x-auto"><table class="w-full text-left"><thead class="bg-stone-50 border-b text-stone-500"><tr><th class="p-2">Date</th><th class="p-2">Item</th><th class="p-2">Qty</th><th class="p-2">Total</th><th class="p-2">Method</th><th class="p-2">Net Profit</th><th class="p-2">Customer</th><th class="p-2 text-right">✕</th></tr></thead><tbody id="tblSales" class="divide-y"></tbody></table></div>
     </section>
 
-    <!-- EXPENSES -->
+    <!-- EXPENSES & INVOICES -->
     <section id="view-exp" class="space-y-3 hidden">
-      <div class="flex justify-between items-center"><h3 class="font-bold text-base">Expenses</h3><button onclick="openM('modalExp')" class="bg-[#511322] text-white font-bold px-3 py-1.5 rounded-lg">+ Add Expense</button></div>
-      <div class="bg-white rounded-xl border overflow-x-auto"><table class="w-full text-left"><thead class="bg-stone-50 border-b text-stone-500"><tr><th class="p-2">Date</th><th class="p-2">Category</th><th class="p-2">Description</th><th class="p-2">Amount</th><th class="p-2 text-right">✕</th></tr></thead><tbody id="tblExp" class="divide-y"></tbody></table></div>
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-base">Expenses & Invoices</h3>
+          <p class="text-stone-400 text-[11px]">Upload full supplier invoices, flight receipts, cargo bills, or clearance receipts.</p>
+        </div>
+        <button onclick="openM('modalExp')" class="bg-[#511322] text-white font-bold px-3 py-1.5 rounded-lg">+ Upload Invoice / Expense</button>
+      </div>
+      <div class="bg-white rounded-xl border overflow-x-auto"><table class="w-full text-left"><thead class="bg-stone-50 border-b text-stone-500"><tr><th class="p-2">Date</th><th class="p-2">Category</th><th class="p-2">Description / Supplier</th><th class="p-2">Invoice #</th><th class="p-2">Amount</th><th class="p-2">Attached Invoice</th><th class="p-2 text-right">✕</th></tr></thead><tbody id="tblExp" class="divide-y"></tbody></table></div>
     </section>
 
     <!-- SETTINGS -->
@@ -101,36 +107,77 @@
     </section>
   </main>
 
-  <!-- MODALS -->
+  <!-- MODAL: ADD PRODUCT / STOCK -->
   <div id="modalProd" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl max-w-xs w-full p-4 space-y-3 shadow-xl">
-      <h3 class="font-bold">Add Item</h3>
-      <input type="text" id="pName" placeholder="Name (e.g. Dresses)" class="w-full border p-2 rounded">
-      <div class="grid grid-cols-2 gap-2"><input type="number" id="pUnits" placeholder="Units" class="border p-2 rounded"><input type="number" step="0.01" id="pCost" placeholder="Cost ($)" class="border p-2 rounded"></div>
+      <h3 class="font-bold text-sm">Add Purchase Item</h3>
+      <input type="text" id="pName" placeholder="Item Name (e.g. Silk Dresses)" class="w-full border p-2 rounded">
+      <div class="grid grid-cols-2 gap-2">
+        <input type="number" id="pUnits" placeholder="Units" class="border p-2 rounded">
+        <input type="number" step="0.01" id="pCost" placeholder="Cost ($)" class="border p-2 rounded">
+      </div>
       <input type="number" step="0.01" id="pPrice" placeholder="Retail Price ($)" class="w-full border p-2 rounded">
-      <div class="flex justify-end gap-2"><button onclick="closeM('modalProd')" class="border px-3 py-1.5 rounded">Cancel</button><button onclick="addProd()" class="bg-[#511322] text-white font-bold px-3 py-1.5 rounded">Save</button></div>
+      <div>
+        <label class="block text-stone-500 mb-1">Attach Invoice / Bill (Photo or PDF):</label>
+        <input type="file" id="pInvoiceFile" accept="image/*,.pdf" class="w-full border p-1 rounded bg-stone-50">
+      </div>
+      <div class="flex justify-end gap-2 pt-1"><button onclick="closeM('modalProd')" class="border px-3 py-1.5 rounded">Cancel</button><button onclick="addProd()" class="bg-[#511322] text-white font-bold px-3 py-1.5 rounded">Save</button></div>
     </div>
   </div>
 
+  <!-- MODAL: RECORD SALE -->
   <div id="modalSale" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl max-w-xs w-full p-4 space-y-3 shadow-xl">
-      <h3 class="font-bold">Record Sale</h3>
+      <h3 class="font-bold text-sm">Record Sale</h3>
       <select id="sProd" class="w-full border p-2 rounded" onchange="fillPrice()"></select>
       <div class="grid grid-cols-2 gap-2"><input type="number" id="sQty" value="1" min="1" class="border p-2 rounded"><input type="number" step="0.01" id="sPrice" class="border p-2 rounded"></div>
       <select id="sPay" class="w-full border p-2 rounded"><option>Whish Money</option><option>Cash on Delivery</option><option>Card</option><option>Cash</option></select>
       <input type="text" id="sCust" placeholder="Customer / WhatsApp Notes" class="w-full border p-2 rounded">
       <input type="date" id="sDate" class="w-full border p-2 rounded">
-      <div class="flex justify-end gap-2"><button onclick="closeM('modalSale')" class="border px-3 py-1.5 rounded">Cancel</button><button onclick="addSale()" class="bg-[#511322] text-white font-bold px-3 py-1.5 rounded">Record</button></div>
+      <div class="flex justify-end gap-2 pt-1"><button onclick="closeM('modalSale')" class="border px-3 py-1.5 rounded">Cancel</button><button onclick="addSale()" class="bg-[#511322] text-white font-bold px-3 py-1.5 rounded">Record</button></div>
     </div>
   </div>
 
+  <!-- MODAL: UPLOAD FULL INVOICE / EXPENSE -->
   <div id="modalExp" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl max-w-xs w-full p-4 space-y-3 shadow-xl">
-      <h3 class="font-bold">Add Expense</h3>
-      <select id="eCat" class="w-full border p-2 rounded"><option>Turkey Sourcing Trip</option><option>Freight & Customs</option><option>Packaging & Labels</option><option>Marketing & Content</option><option>Website & Setup</option><option>Storage & Admin</option></select>
-      <input type="text" id="eDesc" placeholder="Description" class="w-full border p-2 rounded">
-      <div class="grid grid-cols-2 gap-2"><input type="number" step="0.01" id="eAmt" placeholder="Amount ($)" class="border p-2 rounded"><input type="date" id="eDate" class="border p-2 rounded"></div>
-      <div class="flex justify-end gap-2"><button onclick="closeM('modalExp')" class="border px-3 py-1.5 rounded">Cancel</button><button onclick="addExp()" class="bg-[#511322] text-white font-bold px-3 py-1.5 rounded">Save</button></div>
+      <h3 class="font-bold text-sm">Upload Invoice / Expense</h3>
+      <select id="eCat" class="w-full border p-2 rounded">
+        <option>Turkey Supplier Invoice</option>
+        <option>Freight & Cargo (Turkey to Lebanon)</option>
+        <option>Customs & Clearance</option>
+        <option>Turkey Travel (Flights, Hotel, Meals)</option>
+        <option>Packaging, Labels & Tags</option>
+        <option>Marketing, Shoot & Meta Ads</option>
+        <option>Website & Store Setup</option>
+        <option>Storage & Admin</option>
+      </select>
+      <input type="text" id="eDesc" placeholder="Description / Supplier Name" class="w-full border p-2 rounded">
+      <div class="grid grid-cols-2 gap-2">
+        <input type="text" id="eInvNo" placeholder="Invoice # (Optional)" class="border p-2 rounded">
+        <input type="number" step="0.01" id="eAmt" placeholder="Total USD ($)" class="border p-2 rounded">
+      </div>
+      <input type="date" id="eDate" class="w-full border p-2 rounded">
+      <div>
+        <label class="block text-stone-500 mb-1">Upload Invoice Document (Photo / PDF):</label>
+        <input type="file" id="eInvoiceFile" accept="image/*,.pdf" class="w-full border p-1 rounded bg-stone-50">
+      </div>
+      <div class="flex justify-end gap-2 pt-1"><button onclick="closeM('modalExp')" class="border px-3 py-1.5 rounded">Cancel</button><button onclick="addExp()" class="bg-[#511322] text-white font-bold px-3 py-1.5 rounded">Upload & Save</button></div>
+    </div>
+  </div>
+
+  <!-- MODAL: VIEW INVOICE DOCUMENT -->
+  <div id="modalViewInv" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-lg w-full p-4 space-y-3 shadow-2xl">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h4 id="viewInvTitle" class="font-bold">Attached Invoice</h4>
+        <button onclick="closeM('modalViewInv')" class="text-stone-400 hover:text-stone-800 text-lg">&times;</button>
+      </div>
+      <div id="viewInvContent" class="max-h-[70vh] overflow-auto flex items-center justify-center bg-stone-50 p-2 rounded border"></div>
+      <div class="flex justify-end gap-2 pt-1">
+        <a id="downloadInvBtn" download="invoice_doc" class="bg-[#511322] text-white font-bold px-3 py-1.5 rounded">Download File</a>
+        <button onclick="closeM('modalViewInv')" class="border px-3 py-1.5 rounded">Close</button>
+      </div>
     </div>
   </div>
 
@@ -138,29 +185,29 @@
     const INIT = {
       cfg: { pin:'1985', cap:15000, fee:2.5, del:4.0, landed:3.5833 },
       prods: [
-        {id:'p1', name:'Dresses', u:100, cost:18, price:52, sold:0},
-        {id:'p2', name:'Two-piece sets', u:80, cost:25, price:68, sold:0},
-        {id:'p3', name:'Blazers', u:60, cost:22, price:60, sold:0},
-        {id:'p4', name:'Pants', u:80, cost:14, price:40, sold:0},
-        {id:'p5', name:'Tops', u:120, cost:10, price:27, sold:0},
-        {id:'p6', name:'Shirts & T-shirts', u:80, cost:9, price:25, sold:0},
-        {id:'p7', name:'Skirts & bottoms', u:50, cost:12, price:36, sold:0},
-        {id:'p8', name:'Accessories', u:30, cost:8, price:24, sold:0}
+        {id:'p1', name:'Dresses', u:100, cost:18, price:52, sold:0, inv:null},
+        {id:'p2', name:'Two-piece sets', u:80, cost:25, price:68, sold:0, inv:null},
+        {id:'p3', name:'Blazers', u:60, cost:22, price:60, sold:0, inv:null},
+        {id:'p4', name:'Pants', u:80, cost:14, price:40, sold:0, inv:null},
+        {id:'p5', name:'Tops', u:120, cost:10, price:27, sold:0, inv:null},
+        {id:'p6', name:'Shirts & T-shirts', u:80, cost:9, price:25, sold:0, inv:null},
+        {id:'p7', name:'Skirts & bottoms', u:50, cost:12, price:36, sold:0, inv:null},
+        {id:'p8', name:'Accessories', u:30, cost:8, price:24, sold:0, inv:null}
       ],
       exps: [
-        {id:'e1', d:'2026-04-01', c:'Turkey Trip', desc:'Flights (2 partners)', a:800},
-        {id:'e2', d:'2026-04-01', c:'Turkey Trip', desc:'Hotel Istanbul', a:600},
-        {id:'e3', d:'2026-04-02', c:'Turkey Trip', desc:'Transport & meals', a:550},
-        {id:'e4', d:'2026-04-05', c:'Cargo & Customs', desc:'Air cargo to Lebanon', a:900},
-        {id:'e5', d:'2026-04-06', c:'Cargo & Customs', desc:'Customs clearance', a:900},
-        {id:'e6', d:'2026-04-07', c:'Packaging', desc:'Bags, tags & labels', a:350},
-        {id:'e7', d:'2026-04-10', c:'Launch', desc:'Photoshoot, Ads, Setup', a:1000}
+        {id:'e1', d:'2026-04-01', c:'Turkey Travel', desc:'Flights (2 partners return)', no:'TK-FL89', a:800, inv:null},
+        {id:'e2', d:'2026-04-01', c:'Turkey Travel', desc:'Hotel Istanbul 4 nights', no:'HTL-IST4', a:600, inv:null},
+        {id:'e3', d:'2026-04-02', c:'Turkey Travel', desc:'Local transport & meals', no:'-', a:550, inv:null},
+        {id:'e4', d:'2026-04-05', c:'Freight & Cargo', desc:'Air cargo Turkey to Beirut', no:'AWB-9831', a:900, inv:null},
+        {id:'e5', d:'2026-04-06', c:'Customs & Clearance', desc:'Lebanon Customs clearance', no:'CUST-412', a:900, inv:null},
+        {id:'e6', d:'2026-04-07', c:'Packaging', desc:'Branded shopping bags & tags', no:'PKG-01', a:350, inv:null},
+        {id:'e7', d:'2026-04-10', c:'Marketing', desc:'Launch photoshoot, ads & setup', no:'MKT-01', a:1000, inv:null}
       ],
       sales: []
     };
 
-    let S = JSON.parse(localStorage.getItem('anjea_data_v2')) || INIT;
-    function save() { localStorage.setItem('anjea_data_v2', JSON.stringify(S)); render(); }
+    let S = JSON.parse(localStorage.getItem('anjea_data_v3')) || INIT;
+    function save() { localStorage.setItem('anjea_data_v3', JSON.stringify(S)); render(); }
 
     function unlock() {
       if (document.getElementById('pinInput').value === (S.cfg.pin||'1985')) {
@@ -202,14 +249,28 @@
       if (p) document.getElementById('sPrice').value = p.price;
     }
 
-    function addProd() {
+    function fileToBase64(file) {
+      return new Promise((resolve) => {
+        if (!file) resolve(null);
+        const reader = new FileReader();
+        reader.onload = () => resolve({ data: reader.result, name: file.name, type: file.type });
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function addProd() {
       const name = document.getElementById('pName').value.trim();
       const u = parseInt(document.getElementById('pUnits').value)||0;
       const cost = parseFloat(document.getElementById('pCost').value)||0;
       const price = parseFloat(document.getElementById('pPrice').value)||0;
+      const file = document.getElementById('pInvoiceFile').files[0];
       if (!name) return;
-      S.prods.push({ id:'p_'+Date.now(), name, u, cost, price, sold:0 });
-      closeM('modalProd'); save();
+      const inv = await fileToBase64(file);
+      S.prods.push({ id:'p_'+Date.now(), name, u, cost, price, sold:0, inv });
+      closeM('modalProd');
+      document.getElementById('pName').value = '';
+      document.getElementById('pInvoiceFile').value = '';
+      save();
     }
 
     function addSale() {
@@ -226,13 +287,37 @@
       closeM('modalSale'); save();
     }
 
-    function addExp() {
+    async function addExp() {
       const c = document.getElementById('eCat').value;
-      const desc = document.getElementById('eDesc').value;
+      const desc = document.getElementById('eDesc').value.trim();
+      const no = document.getElementById('eInvNo').value.trim() || '-';
       const a = parseFloat(document.getElementById('eAmt').value)||0;
       const d = document.getElementById('eDate').value;
-      S.exps.unshift({ id:'e_'+Date.now(), c, desc, a, d });
-      closeM('modalExp'); save();
+      const file = document.getElementById('eInvoiceFile').files[0];
+      const inv = await fileToBase64(file);
+      S.exps.unshift({ id:'e_'+Date.now(), c, desc, no, a, d, inv });
+      closeM('modalExp');
+      document.getElementById('eDesc').value = '';
+      document.getElementById('eInvNo').value = '';
+      document.getElementById('eAmt').value = '';
+      document.getElementById('eInvoiceFile').value = '';
+      save();
+    }
+
+    function viewInvoiceDoc(itemType, id) {
+      let item = itemType === 'exp' ? S.exps.find(x => x.id === id) : S.prods.find(x => x.id === id);
+      if (!item || !item.inv) return;
+      const container = document.getElementById('viewInvContent');
+      document.getElementById('viewInvTitle').innerText = (item.desc || item.name) + ' (Invoice File)';
+      document.getElementById('downloadInvBtn').href = item.inv.data;
+      document.getElementById('downloadInvBtn').download = item.inv.name || 'invoice_doc';
+
+      if (item.inv.type && item.inv.type.includes('pdf')) {
+        container.innerHTML = `<iframe src="${item.inv.data}" class="w-full h-96 border rounded"></iframe>`;
+      } else {
+        container.innerHTML = `<img src="${item.inv.data}" class="max-h-[60vh] max-w-full rounded object-contain">`;
+      }
+      openM('modalViewInv');
     }
 
     let myChart = null;
@@ -258,14 +343,18 @@
       document.getElementById('tblStock').innerHTML = S.prods.map(p => {
         const landed = p.cost + (S.cfg.landed||3.58);
         const m = (((p.price - landed)/p.price)*100).toFixed(0);
-        return `<tr><td class="p-2 font-bold">${p.name}</td><td class="p-2">${p.u}</td><td class="p-2">$${p.cost}</td><td class="p-2">$${landed.toFixed(1)}</td><td class="p-2 font-bold text-[#511322]">$${p.price}</td><td class="p-2">${m}%</td><td class="p-2">${p.sold}</td><td class="p-2 font-bold">${p.u-p.sold}</td><td class="p-2 text-right"><button onclick="S.prods=S.prods.filter(x=>x.id!=='${p.id}');save();" class="text-red-500">✕</button></td></tr>`;
+        const invBtn = p.inv ? `<button onclick="viewInvoiceDoc('prod','${p.id}')" class="bg-[#C5A880]/20 text-[#511322] font-bold px-2 py-0.5 rounded border border-[#C5A880]">📄 View</button>` : `<span class="text-stone-300">-</span>`;
+        return `<tr><td class="p-2 font-bold">${p.name}</td><td class="p-2">${p.u}</td><td class="p-2">$${p.cost}</td><td class="p-2">$${landed.toFixed(1)}</td><td class="p-2 font-bold text-[#511322]">$${p.price}</td><td class="p-2">${m}%</td><td class="p-2">${p.sold}</td><td class="p-2 font-bold">${p.u-p.sold}</td><td class="p-2">${invBtn}</td><td class="p-2 text-right"><button onclick="S.prods=S.prods.filter(x=>x.id!=='${p.id}');save();" class="text-red-500">✕</button></td></tr>`;
       }).join('');
 
       // Sales Table
       document.getElementById('tblSales').innerHTML = S.sales.length ? S.sales.map(s => `<tr><td class="p-2">${s.d}</td><td class="p-2 font-bold">${s.name}</td><td class="p-2">${s.q}</td><td class="p-2 font-bold text-emerald-700">$${s.tot}</td><td class="p-2">${s.pay}</td><td class="p-2 font-bold text-[#511322]">+$${s.net.toFixed(1)}</td><td class="p-2 text-stone-500">${s.cust}</td><td class="p-2 text-right"><button onclick="S.sales=S.sales.filter(x=>x.id!=='${s.id}');save();" class="text-red-500">✕</button></td></tr>`).join('') : `<tr><td colspan="8" class="p-3 text-center text-stone-400">No sales recorded yet</td></tr>`;
 
       // Exp Table
-      document.getElementById('tblExp').innerHTML = S.exps.map(e => `<tr><td class="p-2">${e.d}</td><td class="p-2 font-bold">${e.c}</td><td class="p-2">${e.desc}</td><td class="p-2 font-bold text-red-600">-$${e.a}</td><td class="p-2 text-right"><button onclick="S.exps=S.exps.filter(x=>x.id!=='${e.id}');save();" class="text-red-500">✕</button></td></tr>`).join('');
+      document.getElementById('tblExp').innerHTML = S.exps.map(e => {
+        const invBtn = e.inv ? `<button onclick="viewInvoiceDoc('exp','${e.id}')" class="bg-[#C5A880]/20 text-[#511322] font-bold px-2 py-0.5 rounded border border-[#C5A880]">📄 View File</button>` : `<span class="text-stone-300">No file</span>`;
+        return `<tr><td class="p-2">${e.d}</td><td class="p-2 font-bold">${e.c}</td><td class="p-2">${e.desc}</td><td class="p-2 text-stone-600">${e.no||'-'}</td><td class="p-2 font-bold text-red-600">-$${e.a}</td><td class="p-2">${invBtn}</td><td class="p-2 text-right"><button onclick="S.exps=S.exps.filter(x=>x.id!=='${e.id}');save();" class="text-red-500">✕</button></td></tr>`;
+      }).join('');
 
       // KPIs
       let totSales=0, totUnits=0, totCogs=0, totVar=0;
@@ -316,10 +405,12 @@
     }
 
     function exportCSV() {
-      let csv = "ANJEA BOUTIQUE DATA\\nITEM,UNITS,COST,PRICE,SOLD,STOCK\\n";
-      S.prods.forEach(p => { csv += `"${p.name}",${p.u},${p.cost},${p.price},${p.sold},${p.u-p.sold}\\n`; });
+      let csv = "ANJEA BOUTIQUE INVENTORY & EXPENSES\nITEM,UNITS,COST,PRICE,SOLD,STOCK\n";
+      S.prods.forEach(p => { csv += `"${p.name}",${p.u},${p.cost},${p.price},${p.sold},${p.u-p.sold}\n`; });
+      csv += "\nEXPENSES & INVOICES\nDATE,CATEGORY,DESC,INVOICE NO,AMOUNT\n";
+      S.exps.forEach(e => { csv += `"${e.d}","${e.c}","${e.desc}","${e.no||''}",${e.a}\n`; });
       const b = new Blob([csv], {type:'text/csv'});
-      const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'anjea_data.csv'; a.click();
+      const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'anjea_financials_invoices.csv'; a.click();
     }
 
     window.onload = () => {
