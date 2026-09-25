@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anjea Boutique · Operations & Finance Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              wine: '#511322',
+              deepwine: '#3A0B16',
+              gold: '#C5A880',
+              cream: '#FAF7F2',
+              dark: '#1C1917'
+            }
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'serif'],
+            sans: ['Montserrat', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Montserrat', sans-serif; background-color: #F8F5F0; }
+    .font-serif { font-family: 'Cormorant Garamond', serif; }
+    .badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 9999px; }
+  </style>
+</head>
+<body class="text-brand-dark min-h-screen flex flex-col relative">
+
+  <!-- ==================== PIN LOCK SCREEN OVERLAY ==================== -->
+  <div id="pinScreen" class="fixed inset-0 bg-brand-deepwine z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-8 shadow-2xl text-center space-y-5 border border-brand-gold/30">
+      <div class="w-16 h-16 rounded-full bg-brand-deepwine mx-auto flex items-center justify-center border-2 border-brand-gold shadow-md">
+        <span class="font-serif text-3xl text-brand-gold font-bold">A</span>
+      </div>
+      <div>
+        <h2 class="font-serif text-2xl font-bold tracking-wider text-brand-deepwine">ANJÉA BOUTIQUE</h2>
+        <p class="text-xs text-stone-500 uppercase tracking-widest mt-1">Partner & Financial Portal</p>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-stone-600 mb-2">Enter Partner Security PIN</label>
+        <input type="password" id="pinInput" maxlength="6" placeholder="••••" class="w-full text-center text-2xl tracking-widest py-3 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold" onkeyup="checkPinOnEnter(event)">
+        <p id="pinError" class="text-xs text-rose-600 mt-2 hidden">Incorrect PIN. Please try again.</p>
+      </div>
+      <button onclick="unlockApp()" class="w-full bg-brand-wine hover:bg-brand-deepwine text-white font-semibold py-3 rounded-xl transition text-sm shadow">
+        Unlock Dashboard
+      </button>
+      <p class="text-[10px] text-stone-400">Default PIN: 1985 (Change in Settings)</p>
+    </div>
+  </div>
+
+  <!-- ==================== APPLICATION HEADER ==================== -->
+  <header class="bg-brand-deepwine text-white border-b border-brand-gold/30 sticky top-0 z-40 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-brand-gold/20 border border-brand-gold flex items-center justify-center font-serif text-2xl text-brand-gold font-bold">A</div>
+        <div>
+          <h1 class="font-serif text-2xl tracking-widest text-brand-gold font-semibold uppercase leading-none">Anjéa</h1>
+          <p class="text-[10px] tracking-widest uppercase text-white/70">Boutique · Management & Finance</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2 text-xs">
+        <span class="bg-brand-wine px-2.5 py-1 rounded text-white/90 border border-brand-gold/40">Whish & Cash Active</span>
+        <button onclick="exportAllCSV()" class="bg-brand-gold hover:bg-yellow-600 text-brand-deepwine font-semibold px-3 py-1.5 rounded transition shadow-sm">
+          ↓ Export CSV
+        </button>
+        <button onclick="lockApp()" class="bg-white/10 hover:bg-white/20 text-white font-medium px-2.5 py-1.5 rounded transition" title="Lock Screen">
+          🔒
+        </button>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 flex space-x-1 sm:space-x-4 border-t border-white/10 text-xs sm:text-sm font-medium">
+      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="py-2.5 px-3 border-b-2 border-brand-gold text-brand-gold flex items-center gap-1.5">
+        📊 <span>Dashboard</span>
+      </button>
+      <button onclick="switchTab('inventory')" id="tab-inventory" class="py-2.5 px-3 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-1.5">
+        👗 <span>Purchases & Stock</span>
+      </button>
+      <button onclick="switchTab('sales')" id="tab-sales" class="py-2.5 px-3 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-1.5">
+        🛍️ <span>Sales & Orders</span>
+      </button>
+      <button onclick="switchTab('expenses')" id="tab-expenses" class="py-2.5 px-3 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-1.5">
+        💸 <span>Expenses & Trips</span>
+      </button>
+      <button onclick="switchTab('settings')" id="tab-settings" class="py-2.5 px-3 border-b-2 border-transparent text-white/70 hover:text-white flex items-center gap-1.5">
+        ⚙️ <span>Settings & Security</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ==================== MAIN APPLICATION CONTAINER ==================== -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
+
+    <!-- TAB 1: DASHBOARD -->
+    <section id="view-dashboard" class="space-y-6">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div class="bg-white p-3.5 rounded-xl border border-stone-200 shadow-sm">
+          <p class="text-xs text-stone-500 uppercase tracking-wider">Initial Capital</p>
+          <p id="kpi-capital" class="text-lg sm:text-xl font-bold text-stone-800 mt-1">$15,000</p>
+          <span class="text-[10px] text-stone-400">Turkey trip fund</span>
+        </div>
+        <div class="bg-white p-3.5 rounded-xl border border-stone-200 shadow-sm">
+          <p class="text-xs text-stone-500 uppercase tracking-wider">Total Sales</p>
+          <p id="kpi-sales" class="text-lg sm:text-xl font-bold text-emerald-700 mt-1">$0</p>
+          <span id="kpi-units-sold" class="text-[10px] text-emerald-600">0 units sold</span>
+        </div>
+        <div class="bg-white p-3.5 rounded-xl border border-stone-200 shadow-sm">
+          <p class="text-xs text-stone-500 uppercase tracking-wider">Gross Margin</p>
+          <p id="kpi-margin" class="text-lg sm:text-xl font-bold text-stone-800 mt-1">0%</p>
+          <span id="kpi-gross-profit" class="text-[10px] text-stone-500">$0 Gross Profit</span>
+        </div>
+        <div class="bg-white p-3.5 rounded-xl border border-stone-200 shadow-sm">
+          <p class="text-xs text-stone-500 uppercase tracking-wider">Net Profit</p>
+          <p id="kpi-net-profit" class="text-lg sm:text-xl font-bold text-stone-800 mt-1">$0</p>
+          <span id="kpi-net-margin" class="text-[10px] text-stone-500">After all costs</span>
+        </div>
+        <div class="bg-white p-3.5 rounded-xl border border-stone-200 shadow-sm">
+          <p class="text-xs text-stone-500 uppercase tracking-wider">Cash Recovered</p>
+          <p id="kpi-recovery" class="text-lg sm:text-xl font-bold text-brand-wine mt-1">0 / 401</p>
+          <span class="text-[10px] text-stone-400">Target: 401 pcs for $15k</span>
+        </div>
+        <div class="bg-white p-3.5 rounded-xl border border-stone-200 shadow-sm">
+          <p class="text-xs text-stone-500 uppercase tracking-wider">Per Partner (50%)</p>
+          <p id="kpi-partner-share" class="text-lg sm:text-xl font-bold text-brand-gold mt-1">$0</p>
+          <span class="text-[10px] text-stone-400">2 partners pool</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
+        <div class="flex justify-between items-center text-xs mb-1.5 font-medium">
+          <span class="text-stone-700">Cash Investment Payback Progress ($15,000 Target)</span>
+          <span id="progress-percent" class="text-brand-wine font-bold">0%</span>
+        </div>
+        <div class="w-full bg-stone-100 rounded-full h-3 overflow-hidden border border-stone-200">
+          <div id="progress-bar" class="bg-brand-wine h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <div class="flex justify-between text-[11px] text-stone-500 mt-1">
+          <span id="progress-cash-recovered">$0 Recovered</span>
+          <span id="progress-cash-remaining">$15,000 to full cash return</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+          <h3 class="font-serif text-lg font-bold text-brand-deepwine mb-3">Inventory Value & Stock Breakdown</h3>
+          <div class="h-64"><canvas id="categoryChart"></canvas></div>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="font-serif text-lg font-bold text-brand-deepwine mb-3">Stock Overview</h3>
+            <ul class="text-xs space-y-2.5 text-stone-600">
+              <li class="flex justify-between border-b pb-1.5">
+                <span>Total Items Purchased:</span>
+                <b id="summary-total-purchased" class="text-stone-900">600</b>
+              </li>
+              <li class="flex justify-between border-b pb-1.5">
+                <span>Total Items Remaining:</span>
+                <b id="summary-total-remaining" class="text-stone-900">600</b>
+              </li>
+              <li class="flex justify-between border-b pb-1.5">
+                <span>Remaining Inventory at Cost:</span>
+                <b id="summary-inventory-cost" class="text-stone-900">$11,150</b>
+              </li>
+              <li class="flex justify-between border-b pb-1.5">
+                <span>Potential Remaining Retail Value:</span>
+                <b id="summary-inventory-retail" class="text-brand-wine font-bold">$25,200</b>
+              </li>
+            </ul>
+          </div>
+          <div class="mt-4 pt-4 border-t flex gap-2">
+            <button onclick="openModal('saleModal')" class="flex-1 bg-brand-wine text-white text-xs font-semibold py-2 rounded-lg hover:bg-brand-deepwine">
+              + Record Sale
+            </button>
+            <button onclick="openModal('expenseModal')" class="flex-1 bg-stone-100 text-stone-800 text-xs font-semibold py-2 rounded-lg hover:bg-stone-200 border">
+              + Add Expense
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: INVENTORY -->
+    <section id="view-inventory" class="space-y-4 hidden">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border border-stone-200">
+        <div>
+          <h2 class="font-serif text-xl font-bold text-brand-deepwine">Purchases & Product Mix</h2>
+          <p class="text-xs text-stone-500">Track Turkey supplier costs, retail prices, and stock remaining.</p>
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <input type="text" id="inventorySearch" oninput="renderInventoryTable()" placeholder="Search product..." class="text-xs border rounded-lg px-3 py-2 w-full sm:w-60 focus:outline-none">
+          <button onclick="openModal('inventoryModal')" class="bg-brand-wine hover:bg-brand-deepwine text-white text-xs font-semibold px-4 py-2 rounded-lg transition whitespace-nowrap">
+            + New Product
+          </button>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 overflow-x-auto shadow-sm">
+        <table class="w-full text-left text-xs text-stone-700">
+          <thead class="bg-stone-50 border-b text-stone-500 font-medium">
+            <tr>
+              <th class="p-3">Category / Item</th>
+              <th class="p-3">Purchased</th>
+              <th class="p-3">Cost/Item</th>
+              <th class="p-3">Landed Cost</th>
+              <th class="p-3">Retail Price</th>
+              <th class="p-3">Gross Margin</th>
+              <th class="p-3">Units Sold</th>
+              <th class="p-3">In Stock</th>
+              <th class="p-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="inventoryTableBody" class="divide-y divide-stone-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 3: SALES -->
+    <section id="view-sales" class="space-y-4 hidden">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border border-stone-200">
+        <div>
+          <h2 class="font-serif text-xl font-bold text-brand-deepwine">Sales & Orders</h2>
+          <p class="text-xs text-stone-500">Record customer orders from WhatsApp, Instagram, or direct in Lebanon.</p>
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <input type="text" id="salesSearch" oninput="renderSalesTable()" placeholder="Search order / customer..." class="text-xs border rounded-lg px-3 py-2 w-full sm:w-60 focus:outline-none">
+          <button onclick="openModal('saleModal')" class="bg-brand-wine hover:bg-brand-deepwine text-white text-xs font-semibold px-4 py-2 rounded-lg transition whitespace-nowrap">
+            + New Sale
+          </button>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 overflow-x-auto shadow-sm">
+        <table class="w-full text-left text-xs text-stone-700">
+          <thead class="bg-stone-50 border-b text-stone-500 font-medium">
+            <tr>
+              <th class="p-3">Date</th>
+              <th class="p-3">Item</th>
+              <th class="p-3">Qty</th>
+              <th class="p-3">Price / Unit</th>
+              <th class="p-3">Total Sale</th>
+              <th class="p-3">Payment</th>
+              <th class="p-3">Fees & Delivery</th>
+              <th class="p-3">Net Profit</th>
+              <th class="p-3">Customer / Notes</th>
+              <th class="p-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="salesTableBody" class="divide-y divide-stone-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 4: EXPENSES -->
+    <section id="view-expenses" class="space-y-4 hidden">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border border-stone-200">
+        <div>
+          <h2 class="font-serif text-xl font-bold text-brand-deepwine">Expenses & Overhead</h2>
+          <p class="text-xs text-stone-500">Turkey trip expenses, freight, packaging, and marketing overhead.</p>
+        </div>
+        <button onclick="openModal('expenseModal')" class="bg-brand-wine hover:bg-brand-deepwine text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
+          + Add Expense
+        </button>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 overflow-x-auto shadow-sm">
+        <table class="w-full text-left text-xs text-stone-700">
+          <thead class="bg-stone-50 border-b text-stone-500 font-medium">
+            <tr>
+              <th class="p-3">Date</th>
+              <th class="p-3">Category</th>
+              <th class="p-3">Description</th>
+              <th class="p-3">Type</th>
+              <th class="p-3">Amount (USD)</th>
+              <th class="p-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="expensesTableBody" class="divide-y divide-stone-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 5: SETTINGS -->
+    <section id="view-settings" class="space-y-6 hidden">
+      <div class="bg-white p-6 rounded-xl border border-stone-200 max-w-3xl space-y-6">
+        <div>
+          <h2 class="font-serif text-xl font-bold text-brand-deepwine">Security & Financial Parameters</h2>
+          <p class="text-xs text-stone-500">Manage your PIN passcode and financial margins.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block font-medium text-stone-700 mb-1">Partner Passcode PIN</label>
+            <input type="text" id="setting-pin" class="w-full border rounded-lg p-2 font-mono font-bold" value="1985">
+          </div>
+          <div>
+            <label class="block font-medium text-stone-700 mb-1">Starting Capital (USD)</label>
+            <input type="number" id="setting-capital" class="w-full border rounded-lg p-2" value="15000">
+          </div>
+          <div>
+            <label class="block font-medium text-stone-700 mb-1">Payment Fee Rate (%) (Whish/Card)</label>
+            <input type="number" step="0.1" id="setting-payment-fee" class="w-full border rounded-lg p-2" value="2.5">
+          </div>
+          <div>
+            <label class="block font-medium text-stone-700 mb-1">Delivery / Return Subsidy Rate (%)</label>
+            <input type="number" step="0.1" id="setting-delivery-fee" class="w-full border rounded-lg p-2" value="4.0">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block font-medium text-stone-700 mb-1">Freight & Customs Landed Addition / Item ($)</label>
+            <input type="number" step="0.01" id="setting-landed-overhead" class="w-full border rounded-lg p-2" value="3.58">
+          </div>
+        </div>
+
+        <div class="pt-4 border-t flex flex-wrap gap-3">
+          <button onclick="saveSettings()" class="bg-brand-wine text-white text-xs font-semibold px-4 py-2 rounded-lg">Save Changes</button>
+          <button onclick="downloadBackupJSON()" class="bg-stone-100 hover:bg-stone-200 border text-stone-800 text-xs font-semibold px-4 py-2 rounded-lg">Backup (JSON)</button>
+          <label class="bg-stone-100 hover:bg-stone-200 border text-stone-800 text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer">
+            Restore Backup
+            <input type="file" id="restoreFile" accept=".json" onchange="restoreBackupJSON(event)" class="hidden">
+          </label>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+  <div id="inventoryModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-md w-full p-5 space-y-4 shadow-xl">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-serif text-lg font-bold text-brand-deepwine">Product / Purchase Item</h3>
+        <button onclick="closeModal('inventoryModal')" class="text-stone-400 hover:text-stone-700 text-lg">&times;</button>
+      </div>
+      <form id="productForm" onsubmit="saveProduct(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="prod-id">
+        <div>
+          <label class="block font-medium mb-1">Category / Item Name</label>
+          <input type="text" id="prod-name" placeholder="e.g. Silk Dresses" required class="w-full border rounded-lg p-2">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium mb-1">Units Purchased</label>
+            <input type="number" id="prod-units" min="1" required class="w-full border rounded-lg p-2" oninput="calcProductMargins()">
+          </div>
+          <div>
+            <label class="block font-medium mb-1">Cost / Unit ($)</label>
+            <input type="number" step="0.01" id="prod-cost" min="0" required class="w-full border rounded-lg p-2" oninput="calcProductMargins()">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium mb-1">Retail Price ($)</label>
+            <input type="number" step="0.01" id="prod-price" min="0" required class="w-full border rounded-lg p-2" oninput="calcProductMargins()">
+          </div>
+          <div>
+            <label class="block font-medium mb-1">Landed Cost ($)</label>
+            <input type="text" id="prod-landed-preview" disabled class="w-full bg-stone-100 border rounded-lg p-2 font-semibold">
+          </div>
+        </div>
+        <div class="p-2.5 bg-stone-50 rounded border text-[11px]">
+          Estimated Gross Margin: <b id="prod-margin-preview" class="text-brand-wine">--%</b>
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('inventoryModal')" class="px-3 py-1.5 border rounded-lg">Cancel</button>
+          <button type="submit" class="px-4 py-1.5 bg-brand-wine text-white rounded-lg font-semibold">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="saleModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-md w-full p-5 space-y-4 shadow-xl">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-serif text-lg font-bold text-brand-deepwine">Record Customer Sale</h3>
+        <button onclick="closeModal('saleModal')" class="text-stone-400 hover:text-stone-700 text-lg">&times;</button>
+      </div>
+      <form id="saleForm" onsubmit="saveSale(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-medium mb-1">Select Item</label>
+          <select id="sale-product-id" onchange="autoFillSalePrice()" required class="w-full border rounded-lg p-2"></select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium mb-1">Quantity</label>
+            <input type="number" id="sale-qty" min="1" value="1" required class="w-full border rounded-lg p-2" oninput="calcSaleTotal()">
+          </div>
+          <div>
+            <label class="block font-medium mb-1">Price / Unit ($)</label>
+            <input type="number" step="0.01" id="sale-price" min="0" required class="w-full border rounded-lg p-2" oninput="calcSaleTotal()">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium mb-1">Payment Method</label>
+            <select id="sale-payment" class="w-full border rounded-lg p-2">
+              <option value="Whish Money">Whish Money</option>
+              <option value="Cash on Delivery (COD)">Cash on Delivery (COD)</option>
+              <option value="Card Payment">Credit/Debit Card</option>
+              <option value="Cash in-person">Cash</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium mb-1">Date</label>
+            <input type="date" id="sale-date" required class="w-full border rounded-lg p-2">
+          </div>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Customer / Notes</label>
+          <input type="text" id="sale-customer" placeholder="e.g. Order via WhatsApp" class="w-full border rounded-lg p-2">
+        </div>
+        <div class="p-2.5 bg-stone-50 rounded border text-[11px] flex justify-between">
+          <span>Total Sale: <b id="sale-total-preview" class="text-emerald-700">$0.00</b></span>
+          <span>Est. Net Profit: <b id="sale-profit-preview" class="text-brand-wine">$0.00</b></span>
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('saleModal')" class="px-3 py-1.5 border rounded-lg">Cancel</button>
+          <button type="submit" class="px-4 py-1.5 bg-brand-wine text-white rounded-lg font-semibold">Complete Sale</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="expenseModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-md w-full p-5 space-y-4 shadow-xl">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-serif text-lg font-bold text-brand-deepwine">Record Business Expense</h3>
+        <button onclick="closeModal('expenseModal')" class="text-stone-400 hover:text-stone-700 text-lg">&times;</button>
+      </div>
+      <form id="expenseForm" onsubmit="saveExpense(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-medium mb-1">Category</label>
+          <select id="exp-category" class="w-full border rounded-lg p-2" required>
+            <option value="Turkey Sourcing Trip">Turkey Sourcing Trip</option>
+            <option value="Freight & Customs">Freight & Customs (Lebanon)</option>
+            <option value="Packaging & Labels">Packaging, Bags & Labels</option>
+            <option value="Marketing & Content">Marketing & Social Media Ads</option>
+            <option value="Website & Setup">Website & Payment Setup</option>
+            <option value="Storage & Admin">Storage & Administration</option>
+            <option value="Other">Other Expenses</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Description</label>
+          <input type="text" id="exp-desc" placeholder="e.g. Flight tickets, Hotel, Cargo" required class="w-full border rounded-lg p-2">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium mb-1">Amount (USD)</label>
+            <input type="number" step="0.01" id="exp-amount" min="0" required class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-medium mb-1">Date</label>
+            <input type="date" id="exp-date" required class="w-full border rounded-lg p-2">
+          </div>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Classification</label>
+          <select id="exp-type" class="w-full border rounded-lg p-2">
+            <option value="Sourcing Trip">Sourcing Trip</option>
+            <option value="Landed Addition">Landed Inventory Addition</option>
+            <option value="Launch Expense">Initial Launch Expense</option>
+            <option value="Operating Overhead">Monthly Operating Overhead</option>
+          </select>
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('expenseModal')" class="px-3 py-1.5 border rounded-lg">Cancel</button>
+          <button type="submit" class="px-4 py-1.5 bg-brand-wine text-white rounded-lg font-semibold">Save Expense</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    const BASELINE_DATA = {
+      settings: {
+        pin: '1985',
+        capital: 15000,
+        partners: 2,
+        paymentFeeRate: 2.5,
+        deliveryAllowanceRate: 4.0,
+        landedOverheadPerUnit: 3.5833
+      },
+      products: [
+        { id: 'p1', name: 'Dresses', unitsPurchased: 100, purchaseCost: 18, sellingPrice: 52, unitsSold: 0 },
+        { id: 'p2', name: 'Two-piece sets', unitsPurchased: 80, purchaseCost: 25, sellingPrice: 68, unitsSold: 0 },
+        { id: 'p3', name: 'Blazers', unitsPurchased: 60, purchaseCost: 22, sellingPrice: 60, unitsSold: 0 },
+        { id: 'p4', name: 'Pants', unitsPurchased: 80, purchaseCost: 14, sellingPrice: 40, unitsSold: 0 },
+        { id: 'p5', name: 'Tops', unitsPurchased: 120, purchaseCost: 10, sellingPrice: 27, unitsSold: 0 },
+        { id: 'p6', name: 'Shirts and T-shirts', unitsPurchased: 80, purchaseCost: 9, sellingPrice: 25, unitsSold: 0 },
+        { id: 'p7', name: 'Skirts and bottoms', unitsPurchased: 50, purchaseCost: 12, sellingPrice: 36, unitsSold: 0 },
+        { id: 'p8', name: 'Accessories', unitsPurchased: 30, purchaseCost: 8, sellingPrice: 24, unitsSold: 0 }
+      ],
+      expenses: [
+        { id: 'e1', date: '2026-04-01', category: 'Turkey Sourcing Trip', desc: 'Flights for 2 people (Return)', amount: 800, type: 'Sourcing Trip' },
+        { id: 'e2', date: '2026-04-01', category: 'Turkey Sourcing Trip', desc: 'Hotel Istanbul (4 nights)', amount: 600, type: 'Sourcing Trip' },
+        { id: 'e3', date: '2026-04-02', category: 'Turkey Sourcing Trip', desc: 'Local transport & taxis', amount: 250, type: 'Sourcing Trip' },
+        { id: 'e4', date: '2026-04-02', category: 'Turkey Sourcing Trip', desc: 'Meals for 2 people', amount: 300, type: 'Sourcing Trip' },
+        { id: 'e5', date: '2026-04-05', category: 'Freight & Customs', desc: 'Turkey to Lebanon cargo', amount: 900, type: 'Landed Addition' },
+        { id: 'e6', date: '2026-04-06', category: 'Freight & Customs', desc: 'Lebanon customs clearance', amount: 900, type: 'Landed Addition' },
+        { id: 'e7', date: '2026-04-07', category: 'Packaging & Labels', desc: 'Boutique bags, hangtags, tissue', amount: 350, type: 'Landed Addition' },
+        { id: 'e8', date: '2026-04-10', category: 'Marketing & Content', desc: 'Launch photoshoot & ads', amount: 700, type: 'Launch Expense' },
+        { id: 'e9', date: '2026-04-10', category: 'Website & Setup', desc: 'Online catalogue setup', amount: 300, type: 'Launch Expense' }
+      ],
+      sales: []
+    };
+
+    let appState = {};
+
+    function loadState() {
+      const saved = localStorage.getItem('anjea_boutique_data');
+      if (saved) {
+        try {
+          appState = JSON.parse(saved);
+          if (!appState.settings.pin) appState.settings.pin = '1985';
+        } catch (e) {
+          appState = JSON.parse(JSON.stringify(BASELINE_DATA));
+        }
+      } else {
+        appState = JSON.parse(JSON.stringify(BASELINE_DATA));
+        saveState();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem('anjea_boutique_data', JSON.stringify(appState));
+      refreshAll();
+    }
+
+    // PIN SECURITY LOGIC
+    function checkPinOnEnter(e) {
+      if (e.key === 'Enter') unlockApp();
+    }
+
+    function unlockApp() {
+      const entered = document.getElementById('pinInput').value;
+      const expected = appState.settings.pin || '1985';
+      if (entered === expected) {
+        document.getElementById('pinScreen').classList.add('hidden');
+        sessionStorage.setItem('anjea_unlocked', 'true');
+        refreshAll();
+      } else {
+        document.getElementById('pinError').classList.remove('hidden');
+      }
+    }
+
+    function lockApp() {
+      sessionStorage.removeItem('anjea_unlocked');
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinError').classList.add('hidden');
+      document.getElementById('pinScreen').classList.remove('hidden');
+    }
+
+    // TAB LOGIC
+    function switchTab(tabName) {
+      ['dashboard', 'inventory', 'sales', 'expenses', 'settings'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        const tabBtn = document.getElementById(`tab-${t}`);
+        tabBtn.classList.remove('border-brand-gold', 'text-brand-gold');
+        tabBtn.classList.add('border-transparent', 'text-white/70');
+      });
+      document.getElementById(`view-${tabName}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-${tabName}`);
+      activeBtn.classList.add('border-brand-gold', 'text-brand-gold');
+      activeBtn.classList.remove('border-transparent', 'text-white/70');
+      if (tabName === 'dashboard') renderCharts();
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      document.getElementById(id).classList.add('flex');
+      if (id === 'saleModal') {
+        populateSaleDropdown();
+        document.getElementById('sale-date').value = new Date().toISOString().split('T')[0];
+        autoFillSalePrice();
+      } else if (id === 'expenseModal') {
+        document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
+      }
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+      document.getElementById(id).classList.remove('flex');
+    }
+
+    function calcProductMargins() {
+      const cost = parseFloat(document.getElementById('prod-cost').value) || 0;
+      const price = parseFloat(document.getElementById('prod-price').value) || 0;
+      const landed = cost + (appState.settings.landedOverheadPerUnit || 3.5833);
+      document.getElementById('prod-landed-preview').value = `$${landed.toFixed(2)}`;
+      if (price > 0) {
+        const margin = ((price - landed) / price) * 100;
+        document.getElementById('prod-margin-preview').innerText = `${margin.toFixed(1)}%`;
+      } else {
+        document.getElementById('prod-margin-preview').innerText = `--%`;
+      }
+    }
+
+    function saveProduct(e) {
+      e.preventDefault();
+      const id = document.getElementById('prod-id').value || 'p_' + Date.now();
+      const name = document.getElementById('prod-name').value.trim();
+      const units = parseInt(document.getElementById('prod-units').value) || 0;
+      const cost = parseFloat(document.getElementById('prod-cost').value) || 0;
+      const price = parseFloat(document.getElementById('prod-price').value) || 0;
+
+      const idx = appState.products.findIndex(p => p.id === id);
+      if (idx > -1) {
+        appState.products[idx].name = name;
+        appState.products[idx].unitsPurchased = units;
+        appState.products[idx].purchaseCost = cost;
+        appState.products[idx].sellingPrice = price;
+      } else {
+        appState.products.push({ id, name, unitsPurchased: units, purchaseCost: cost, sellingPrice: price, unitsSold: 0 });
+      }
+      closeModal('inventoryModal');
+      document.getElementById('productForm').reset();
+      document.getElementById('prod-id').value = '';
+      saveState();
+    }
+
+    function editProduct(id) {
+      const p = appState.products.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('prod-id').value = p.id;
+      document.getElementById('prod-name').value = p.name;
+      document.getElementById('prod-units').value = p.unitsPurchased;
+      document.getElementById('prod-cost').value = p.purchaseCost;
+      document.getElementById('prod-price').value = p.sellingPrice;
+      calcProductMargins();
+      openModal('inventoryModal');
+    }
+
+    function deleteProduct(id) {
+      if (confirm("Delete this product?")) {
+        appState.products = appState.products.filter(p => p.id !== id);
+        saveState();
+      }
+    }
+
+    function populateSaleDropdown() {
+      const select = document.getElementById('sale-product-id');
+      select.innerHTML = '';
+      appState.products.forEach(p => {
+        const inStock = p.unitsPurchased - (p.unitsSold || 0);
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.name} (Stock: ${inStock} pcs - $${p.sellingPrice})`;
+        select.appendChild(opt);
+      });
+    }
+
+    function autoFillSalePrice() {
+      const selId = document.getElementById('sale-product-id').value;
+      const p = appState.products.find(x => x.id === selId);
+      if (p) document.getElementById('sale-price').value = p.sellingPrice;
+      calcSaleTotal();
+    }
+
+    function calcSaleTotal() {
+      const selId = document.getElementById('sale-product-id').value;
+      const p = appState.products.find(x => x.id === selId);
+      const qty = parseInt(document.getElementById('sale-qty').value) || 0;
+      const price = parseFloat(document.getElementById('sale-price').value) || 0;
+      const total = qty * price;
+      document.getElementById('sale-total-preview').innerText = `$${total.toFixed(2)}`;
+
+      if (p) {
+        const landedCost = (p.purchaseCost + (appState.settings.landedOverheadPerUnit || 3.5833)) * qty;
+        const varCosts = total * ((appState.settings.paymentFeeRate + appState.settings.deliveryAllowanceRate) / 100);
+        const netProfit = total - landedCost - varCosts;
+        document.getElementById('sale-profit-preview').innerText = `$${netProfit.toFixed(2)}`;
+      }
+    }
+
+    function saveSale(e) {
+      e.preventDefault();
+      const pId = document.getElementById('sale-product-id').value;
+      const product = appState.products.find(p => p.id === pId);
+      if (!product) return;
+
+      const qty = parseInt(document.getElementById('sale-qty').value) || 1;
+      const price = parseFloat(document.getElementById('sale-price').value) || product.sellingPrice;
+      const total = qty * price;
+      const date = document.getElementById('sale-date').value;
+      const paymentMethod = document.getElementById('sale-payment').value;
+      const customer = document.getElementById('sale-customer').value || 'Direct order';
+
+      const landedUnit = product.purchaseCost + (appState.settings.landedOverheadPerUnit || 3.5833);
+      const totalCOGS = landedUnit * qty;
+      const varFees = total * ((appState.settings.paymentFeeRate + appState.settings.deliveryAllowanceRate) / 100);
+      const netProfit = total - totalCOGS - varFees;
+
+      product.unitsSold = (product.unitsSold || 0) + qty;
+      appState.sales.unshift({
+        id: 's_' + Date.now(),
+        productId: product.id,
+        productName: product.name,
+        qty, price, total, paymentMethod, date, customer, varFees, netProfit
+      });
+
+      closeModal('saleModal');
+      document.getElementById('saleForm').reset();
+      saveState();
+    }
+
+    function deleteSale(id) {
+      const s = appState.sales.find(x => x.id === id);
+      if (!s) return;
+      if (confirm(`Delete sale of ${s.productName}? Inventory will be restored.`)) {
+        const prod = appState.products.find(p => p.id === s.productId);
+        if (prod) prod.unitsSold = Math.max(0, (prod.unitsSold || 0) - s.qty);
+        appState.sales = appState.sales.filter(x => x.id !== id);
+        saveState();
+      }
+    }
+
+    function saveExpense(e) {
+      e.preventDefault();
+      const cat = document.getElementById('exp-category').value;
+      const desc = document.getElementById('exp-desc').value.trim();
+      const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
+      const date = document.getElementById('exp-date').value;
+      const type = document.getElementById('exp-type').value;
+
+      appState.expenses.unshift({ id: 'e_' + Date.now(), date, category: cat, desc, amount, type });
+      closeModal('expenseModal');
+      document.getElementById('expenseForm').reset();
+      saveState();
+    }
+
+    function deleteExpense(id) {
+      if (confirm("Delete this expense record?")) {
+        appState.expenses = appState.expenses.filter(e => e.id !== id);
+        saveState();
+      }
+    }
+
+    function saveSettings() {
+      appState.settings.pin = document.getElementById('setting-pin').value.trim() || '1985';
+      appState.settings.capital = parseFloat(document.getElementById('setting-capital').value) || 15000;
+      appState.settings.paymentFeeRate = parseFloat(document.getElementById('setting-payment-fee').value) || 2.5;
+      appState.settings.deliveryAllowanceRate = parseFloat(document.getElementById('setting-delivery-fee').value) || 4.0;
+      appState.settings.landedOverheadPerUnit = parseFloat(document.getElementById('setting-landed-overhead').value) || 3.5833;
+      saveState();
+      alert("Settings and Passcode updated successfully!");
+    }
+
+    function renderInventoryTable() {
+      const search = (document.getElementById('inventorySearch').value || '').toLowerCase();
+      const tbody = document.getElementById('inventoryTableBody');
+      tbody.innerHTML = '';
+
+      appState.products.forEach(p => {
+        if (search && !p.name.toLowerCase().includes(search)) return;
+        const landed = p.purchaseCost + (appState.settings.landedOverheadPerUnit || 3.5833);
+        const margin = p.sellingPrice > 0 ? (((p.sellingPrice - landed) / p.sellingPrice) * 100).toFixed(1) : 0;
+        const inStock = p.unitsPurchased - (p.unitsSold || 0);
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-stone-50/80 transition';
+        tr.innerHTML = `
+          <td class="p-3 font-medium text-stone-900">${p.name}</td>
+          <td class="p-3">${p.unitsPurchased} pcs</td>
+          <td class="p-3">$${p.purchaseCost.toFixed(2)}</td>
+          <td class="p-3 text-stone-600">$${landed.toFixed(2)}</td>
+          <td class="p-3 font-semibold text-brand-deepwine">$${p.sellingPrice.toFixed(2)}</td>
+          <td class="p-3"><span class="badge ${margin >= 50 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${margin}%</span></td>
+          <td class="p-3">${p.unitsSold || 0}</td>
+          <td class="p-3 font-bold ${inStock <= 10 ? 'text-rose-600' : 'text-stone-800'}">${inStock}</td>
+          <td class="p-3 text-right space-x-2">
+            <button onclick="editProduct('${p.id}')" class="text-stone-500 hover:text-stone-900 font-medium">Edit</button>
+            <button onclick="deleteProduct('${p.id}')" class="text-rose-500 hover:text-rose-700">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderSalesTable() {
+      const search = (document.getElementById('salesSearch').value || '').toLowerCase();
+      const tbody = document.getElementById('salesTableBody');
+      tbody.innerHTML = '';
+
+      if (appState.sales.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-stone-400">No sales recorded yet. Click "+ New Sale" to add an order!</td></tr>`;
+        return;
+      }
+
+      appState.sales.forEach(s => {
+        if (search && !s.productName.toLowerCase().includes(search) && !s.customer.toLowerCase().includes(search)) return;
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-stone-50/80 transition';
+        tr.innerHTML = `
+          <td class="p-3 text-stone-500 whitespace-nowrap">${s.date}</td>
+          <td class="p-3 font-medium text-stone-900">${s.productName}</td>
+          <td class="p-3">${s.qty}</td>
+          <td class="p-3">$${s.price.toFixed(2)}</td>
+          <td class="p-3 font-bold text-emerald-700">$${s.total.toFixed(2)}</td>
+          <td class="p-3"><span class="badge bg-stone-100 text-stone-700">${s.paymentMethod}</span></td>
+          <td class="p-3 text-stone-500">-$${(s.varFees || 0).toFixed(2)}</td>
+          <td class="p-3 font-semibold text-brand-wine">+$${(s.netProfit || 0).toFixed(2)}</td>
+          <td class="p-3 text-stone-600">${s.customer}</td>
+          <td class="p-3 text-right">
+            <button onclick="deleteSale('${s.id}')" class="text-rose-500 hover:text-rose-700">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderExpensesTable() {
+      const tbody = document.getElementById('expensesTableBody');
+      tbody.innerHTML = '';
+      appState.expenses.forEach(e => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-stone-50/80 transition';
+        tr.innerHTML = `
+          <td class="p-3 text-stone-500 whitespace-nowrap">${e.date}</td>
+          <td class="p-3 font-medium text-stone-900">${e.category}</td>
+          <td class="p-3 text-stone-700">${e.desc}</td>
+          <td class="p-3"><span class="badge bg-stone-100 text-stone-700">${e.type}</span></td>
+          <td class="p-3 font-bold text-rose-700">-$${e.amount.toFixed(2)}</td>
+          <td class="p-3 text-right">
+            <button onclick="deleteExpense('${e.id}')" class="text-rose-500 hover:text-rose-700">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    let chartInstance = null;
+
+    function refreshDashboard() {
+      const capital = appState.settings.capital || 15000;
+      const partners = appState.settings.partners || 2;
+
+      let totalSalesRev = 0;
+      let totalUnitsSold = 0;
+      let totalLandedCOGS = 0;
+      let totalVarFees = 0;
+
+      appState.sales.forEach(s => {
+        totalSalesRev += s.total;
+        totalUnitsSold += s.qty;
+        totalVarFees += (s.varFees || 0);
+        const p = appState.products.find(item => item.id === s.productId);
+        const landedCostUnit = p ? (p.purchaseCost + (appState.settings.landedOverheadPerUnit || 3.5833)) : 18.58;
+        totalLandedCOGS += landedCostUnit * s.qty;
+      });
+
+      const grossProfit = totalSalesRev - totalLandedCOGS;
+      const grossMarginPct = totalSalesRev > 0 ? (grossProfit / totalSalesRev) * 100 : 0;
+
+      let totalSourcingLaunchExpense = 0;
+      let totalOperatingOverhead = 0;
+      appState.expenses.forEach(e => {
+        if (e.type === 'Sourcing Trip' || e.type === 'Launch Expense') totalSourcingLaunchExpense += e.amount;
+        else if (e.type === 'Operating Overhead') totalOperatingOverhead += e.amount;
+      });
+
+      const netProfit = grossProfit - totalVarFees - totalSourcingLaunchExpense - totalOperatingOverhead;
+      const partnerShare = netProfit / partners;
+
+      document.getElementById('kpi-capital').innerText = `$${capital.toLocaleString()}`;
+      document.getElementById('kpi-sales').innerText = `$${totalSalesRev.toFixed(0)}`;
+      document.getElementById('kpi-units-sold').innerText = `${totalUnitsSold} units sold`;
+      document.getElementById('kpi-margin').innerText = `${grossMarginPct.toFixed(1)}%`;
+      document.getElementById('kpi-gross-profit').innerText = `$${grossProfit.toFixed(0)} Gross Profit`;
+      document.getElementById('kpi-net-profit').innerText = `$${netProfit.toFixed(0)}`;
+      document.getElementById('kpi-net-margin').innerText = totalSalesRev > 0 ? `${((netProfit / totalSalesRev)*100).toFixed(1)}% Net Margin` : 'Net Margin';
+      document.getElementById('kpi-recovery').innerText = `${totalUnitsSold} / 401`;
+      document.getElementById('kpi-partner-share').innerText = `$${partnerShare.toFixed(0)}`;
+
+      const cashRecovered = Math.max(0, totalSalesRev - totalVarFees);
+      const progressPct = Math.min(100, (cashRecovered / capital) * 100);
+      document.getElementById('progress-bar').style.width = `${progressPct}%`;
+      document.getElementById('progress-percent').innerText = `${progressPct.toFixed(1)}%`;
+      document.getElementById('progress-cash-recovered').innerText = `$${cashRecovered.toFixed(0)} Recovered`;
+      const remainingCash = Math.max(0, capital - cashRecovered);
+      document.getElementById('progress-cash-remaining').innerText = `$${remainingCash.toFixed(0)} to full $15k return`;
+
+      let totalPurchased = 0;
+      let totalSoldStock = 0;
+      let remainingCost = 0;
+      let remainingRetail = 0;
+
+      appState.products.forEach(p => {
+        totalPurchased += p.unitsPurchased;
+        const sold = p.unitsSold || 0;
+        totalSoldStock += sold;
+        const remaining = Math.max(0, p.unitsPurchased - sold);
+        const landed = p.purchaseCost + (appState.settings.landedOverheadPerUnit || 3.5833);
+        remainingCost += remaining * landed;
+        remainingRetail += remaining * p.sellingPrice;
+      });
+
+      document.getElementById('summary-total-purchased').innerText = totalPurchased;
+      document.getElementById('summary-total-remaining').innerText = (totalPurchased - totalSoldStock);
+      document.getElementById('summary-inventory-cost').innerText = `$${remainingCost.toFixed(0)}`;
+      document.getElementById('summary-inventory-retail').innerText = `$${remainingRetail.toFixed(0)}`;
+    }
+
+    function renderCharts() {
+      const ctx = document.getElementById('categoryChart');
+      if (!ctx) return;
+      const labels = appState.products.map(p => p.name);
+      const inStockData = appState.products.map(p => Math.max(0, p.unitsPurchased - (p.unitsSold || 0)));
+      const soldData = appState.products.map(p => p.unitsSold || 0);
+
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'In Stock (Units)', data: inStockData, backgroundColor: '#511322' },
+            { label: 'Sold (Units)', data: soldData, backgroundColor: '#C5A880' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { stacked: true, ticks: { font: { size: 10 } } },
+            y: { stacked: true, beginAtZero: true, ticks: { font: { size: 10 } } }
+          },
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+        }
+      });
+    }
+
+    function exportAllCSV() {
+      let csv = "ANJEA BOUTIQUE EXPORT\n\n--- INVENTORY ---\nCategory,Units Purchased,Cost,Price,Sold,Remaining\n";
+      appState.products.forEach(p => {
+        csv += `"${p.name}",${p.unitsPurchased},${p.purchaseCost},${p.sellingPrice},${p.unitsSold || 0},${p.unitsPurchased - (p.unitsSold || 0)}\n`;
+      });
+      csv += "\n--- SALES ---\nDate,Product,Qty,Price,Total,Payment,Net Profit,Customer\n";
+      appState.sales.forEach(s => {
+        csv += `"${s.date}","${s.productName}",${s.qty},${s.price},${s.total},"${s.paymentMethod}",${s.netProfit},"${s.customer}"\n`;
+      });
+      csv += "\n--- EXPENSES ---\nDate,Category,Description,Type,Amount\n";
+      appState.expenses.forEach(e => {
+        csv += `"${e.date}","${e.category}","${e.desc}","${e.type}",${e.amount}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `anjea_boutique_financials_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function downloadBackupJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `anjea_backup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function restoreBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.products && parsed.expenses) {
+            appState = parsed;
+            saveState();
+            alert("Backup restored!");
+          }
+        } catch (err) { alert("Invalid file"); }
+      };
+      reader.readAsText(file);
+    }
+
+    function refreshAll() {
+      renderInventoryTable();
+      renderSalesTable();
+      renderExpensesTable();
+      refreshDashboard();
+      renderCharts();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      if (sessionStorage.getItem('anjea_unlocked') === 'true') {
+        document.getElementById('pinScreen').classList.add('hidden');
+        refreshAll();
+      }
+    });
+  </script>
+</body>
+</html>
