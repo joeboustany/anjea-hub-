@@ -5,18 +5,23 @@
   <title>Anjea Boutique · Hub & AI Scanner</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
   <style>body { background:#FAF7F2; font-family:system-ui,-apple-system,sans-serif; }</style>
 </head>
 <body class="text-stone-800 text-xs">
 
-  <!-- PIN LOCK -->
+  <!-- SECURE CLOUD LOGIN -->
   <div id="pinBox" class="fixed inset-0 bg-[#3A0B16] z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xs w-full p-6 text-center shadow-xl space-y-4">
       <div class="w-12 h-12 rounded-full bg-[#511322] mx-auto flex items-center justify-center text-[#C5A880] text-xl font-bold">A</div>
-      <div><h2 class="text-lg font-bold text-[#511322]">ANJÉA BOUTIQUE</h2><p class="text-[10px] text-stone-400">Portal & AI Invoice Scanner</p></div>
-      <input type="password" id="pinInput" placeholder="PIN: 1985" maxlength="6" class="w-full text-center text-xl py-2 border rounded-xl" onkeyup="if(event.key==='Enter')unlock()">
-      <p id="pinErr" class="text-red-500 hidden">Incorrect PIN</p>
-      <button onclick="unlock()" class="w-full py-2.5 bg-[#511322] text-white font-bold rounded-xl shadow">Unlock</button>
+      <div><h2 class="text-lg font-bold text-[#511322]">ANJÉA BOUTIQUE</h2><p class="text-[10px] text-stone-400">Secure Shared Business Hub</p></div>
+      <input type="email" id="authEmail" placeholder="Approved email address" autocomplete="email" class="w-full py-2 px-3 border rounded-xl">
+      <input type="password" id="authPassword" placeholder="Password (minimum 6 characters)" autocomplete="current-password" class="w-full py-2 px-3 border rounded-xl" onkeyup="if(event.key==='Enter')signIn()">
+      <p id="pinErr" class="text-red-500 hidden"></p>
+      <button id="btnSignIn" onclick="signIn()" class="w-full py-2.5 bg-[#511322] text-white font-bold rounded-xl shadow">Sign In</button>
+      <button onclick="signUp()" class="w-full py-2.5 border border-[#511322] text-[#511322] font-bold rounded-xl">First time? Create Password</button>
+      <button onclick="resetPassword()" class="text-[11px] text-stone-500 underline">Forgot password?</button>
+      <p class="text-[10px] text-stone-400">Only approved Anjea team emails can access business data.</p>
     </div>
   </div>
 
@@ -25,6 +30,7 @@
     <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="font-serif tracking-widest text-[#C5A880] font-bold text-lg">ANJÉA BOUTIQUE</div>
       <div class="flex items-center gap-2">
+        <span id="cloudStatus" class="hidden sm:inline text-[10px] text-emerald-300">● Cloud</span>
         <button onclick="openM('modalAiScan')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded text-xs flex items-center gap-1 shadow">✨ Scan Invoice</button>
         <button onclick="exportCSV()" class="bg-[#C5A880] text-[#3A0B16] font-bold px-2.5 py-1 rounded text-xs">↓ CSV</button>
         <button onclick="lock()" class="text-white/80 hover:text-white px-1.5 py-1">🔒</button>
@@ -115,10 +121,23 @@
         <input type="password" id="cfgApiKey" placeholder="Paste your AI Studio API key here" class="w-full border p-2 rounded bg-stone-50 font-mono text-[11px]">
         <p class="text-[10px] text-stone-400 mt-1">Get your free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 underline">aistudio.google.com</a> (Free forever).</p>
       </div>
-      <div><label class="block mb-1 font-bold text-stone-700">PIN Passcode</label><input type="text" id="cfgPin" class="w-full border p-2 rounded" value="1985"></div>
       <div><label class="block mb-1 font-bold text-stone-700">Starting Capital ($)</label><input type="number" id="cfgCap" class="w-full border p-2 rounded" value="15000"></div>
       <div><label class="block mb-1 font-bold text-stone-700">Landed Addition / Item ($)</label><input type="number" step="0.01" id="cfgLanded" class="w-full border p-2 rounded" value="3.58"></div>
+      <p class="text-[10px] text-stone-400">The Gemini key stays only on this device and is never uploaded to the shared database.</p>
       <button onclick="saveCfg()" class="bg-[#511322] text-white font-bold px-4 py-2 rounded">Save Settings</button>
+
+      <div class="border-t pt-3 space-y-2">
+        <h4 class="font-bold text-[#511322]">Team Access</h4>
+        <p class="text-[10px] text-stone-400">Add your wife's email here before she creates her password.</p>
+        <div class="flex gap-2"><input type="email" id="teamEmail" placeholder="wife@email.com" class="flex-1 border p-2 rounded"><button onclick="addTeamMember()" class="bg-[#C5A880] text-[#3A0B16] font-bold px-3 rounded">Add</button></div>
+        <div id="teamList" class="text-[11px] space-y-1"></div>
+      </div>
+
+      <div id="migrationPanel" class="hidden border-t pt-3 space-y-2">
+        <h4 class="font-bold text-amber-700">Existing Laptop Data Found</h4>
+        <p class="text-[10px] text-stone-500">Use this once on the laptop that contains the latest Anjea records.</p>
+        <button onclick="transferLocalData()" class="w-full bg-amber-600 text-white font-bold px-3 py-2 rounded">Transfer This Laptop's Data to Cloud</button>
+      </div>
     </section>
   </main>
 
@@ -298,17 +317,181 @@
       sales: []
     };
 
-    let S = JSON.parse(localStorage.getItem('anjea_data_v4')) || INIT;
-    function save() { localStorage.setItem('anjea_data_v4', JSON.stringify(S)); render(); }
+    const SUPABASE_URL = 'https://tzxwihjosrrtcuimvynb.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_mj8IGnRzkuXp9m5L2bvO2A_mSEp6b6e';
+    const APP_URL = 'https://joeboustany.github.io/anjea-hub-/';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+    });
 
-    function unlock() {
-      if (document.getElementById('pinInput').value === (S.cfg.pin||'1985')) {
-        document.getElementById('pinBox').classList.add('hidden');
-        sessionStorage.setItem('unlocked','1');
-        render();
-      } else { document.getElementById('pinErr').classList.remove('hidden'); }
+    let S = structuredClone(INIT);
+    let currentUser = null;
+    let cloudReady = false;
+    let realtimeChannel = null;
+    let saving = false;
+    let saveQueued = false;
+
+    function localGeminiKey() { return localStorage.getItem('anjea_gemini_key') || ''; }
+    function setAuthError(message) {
+      const el = document.getElementById('pinErr');
+      el.textContent = message || '';
+      el.classList.toggle('hidden', !message);
     }
-    function lock() { sessionStorage.removeItem('unlocked'); document.getElementById('pinBox').classList.remove('hidden'); }
+    function setCloudStatus(text, ok=true) {
+      const el = document.getElementById('cloudStatus');
+      el.textContent = text;
+      el.className = `hidden sm:inline text-[10px] ${ok ? 'text-emerald-300' : 'text-amber-300'}`;
+    }
+    function dataForCloud() {
+      const data = JSON.parse(JSON.stringify(S));
+      if (!data.cfg) data.cfg = {};
+      data.cfg.apiKey = '';
+      return data;
+    }
+
+    async function save() {
+      render();
+      if (!cloudReady || !currentUser) return;
+      if (saving) { saveQueued = true; return; }
+      saving = true;
+      setCloudStatus('● Saving…', true);
+      const payload = dataForCloud();
+      const { error } = await sb.from('anjea_app_state').update({
+        data: payload,
+        updated_at: new Date().toISOString(),
+        updated_by: currentUser.id
+      }).eq('id','main');
+      saving = false;
+      if (error) {
+        console.error(error);
+        setCloudStatus('● Sync error', false);
+        alert('Cloud save failed: ' + error.message);
+      } else {
+        localStorage.setItem('anjea_cloud_cache_v1', JSON.stringify(payload));
+        setCloudStatus('● Cloud synced', true);
+      }
+      if (saveQueued) { saveQueued = false; save(); }
+    }
+
+    async function signIn() {
+      setAuthError('');
+      const email = document.getElementById('authEmail').value.trim().toLowerCase();
+      const password = document.getElementById('authPassword').value;
+      if (!email || !password) return setAuthError('Enter your email and password.');
+      document.getElementById('btnSignIn').disabled = true;
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      document.getElementById('btnSignIn').disabled = false;
+      if (error) return setAuthError(error.message);
+      await startCloud(data.user);
+    }
+
+    async function signUp() {
+      setAuthError('');
+      const email = document.getElementById('authEmail').value.trim().toLowerCase();
+      const password = document.getElementById('authPassword').value;
+      if (!email || password.length < 6) return setAuthError('Enter an approved email and a password of at least 6 characters.');
+      const { data, error } = await sb.auth.signUp({ email, password, options:{ emailRedirectTo:APP_URL } });
+      if (error) return setAuthError(error.message);
+      if (data.session) await startCloud(data.user);
+      else alert('Account created. Please open the confirmation email, then return and sign in.');
+    }
+
+    async function resetPassword() {
+      const email = document.getElementById('authEmail').value.trim().toLowerCase();
+      if (!email) return setAuthError('Enter your email first.');
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo:APP_URL });
+      if (error) return setAuthError(error.message);
+      alert('Password reset email sent.');
+    }
+
+    async function lock() {
+      if (realtimeChannel) await sb.removeChannel(realtimeChannel);
+      await sb.auth.signOut();
+      currentUser = null; cloudReady = false;
+      document.getElementById('pinBox').classList.remove('hidden');
+      setCloudStatus('● Signed out', false);
+    }
+
+    async function startCloud(user) {
+      if (!user) return;
+      currentUser = user;
+      setCloudStatus('● Connecting…', true);
+      const { data:member, error:memberError } = await sb.from('anjea_members').select('email,role').eq('email', user.email.toLowerCase()).maybeSingle();
+      if (memberError || !member) {
+        await sb.auth.signOut();
+        currentUser = null;
+        return setAuthError('This email is not approved for Anjea Hub. Ask the administrator to add it in Settings.');
+      }
+
+      const { data:row, error } = await sb.from('anjea_app_state').select('data,updated_at').eq('id','main').single();
+      if (error) return setAuthError('Unable to load cloud data: ' + error.message);
+      const cloudData = row && row.data && Object.keys(row.data).length ? row.data : structuredClone(INIT);
+      S = cloudData;
+      S.cfg = Object.assign({}, INIT.cfg, S.cfg || {}, { apiKey:localGeminiKey() });
+      S.prods = Array.isArray(S.prods) ? S.prods : [];
+      S.exps = Array.isArray(S.exps) ? S.exps : [];
+      S.sales = Array.isArray(S.sales) ? S.sales : [];
+      cloudReady = true;
+      document.getElementById('pinBox').classList.add('hidden');
+      setAuthError('');
+      setCloudStatus('● Cloud synced', true);
+      render();
+      showMigrationOption();
+      await loadTeamMembers();
+
+      if (realtimeChannel) await sb.removeChannel(realtimeChannel);
+      realtimeChannel = sb.channel('anjea-live-state')
+        .on('postgres_changes', { event:'UPDATE', schema:'public', table:'anjea_app_state', filter:'id=eq.main' }, payload => {
+          if (!payload.new || !payload.new.data) return;
+          const localKey = localGeminiKey();
+          S = payload.new.data;
+          S.cfg = Object.assign({}, INIT.cfg, S.cfg || {}, { apiKey:localKey });
+          render();
+          setCloudStatus('● Live update', true);
+        }).subscribe();
+    }
+
+    function showMigrationOption() {
+      const hasOldData = !!localStorage.getItem('anjea_data_v4');
+      const alreadyDone = localStorage.getItem('anjea_cloud_migrated_v1') === '1';
+      document.getElementById('migrationPanel').classList.toggle('hidden', !hasOldData || alreadyDone);
+    }
+
+    async function transferLocalData() {
+      const raw = localStorage.getItem('anjea_data_v4');
+      if (!raw) return alert('No old Anjea data was found in this browser.');
+      if (!confirm('Transfer this laptop data to the shared cloud? This should be done only from the laptop with the latest records.')) return;
+      try {
+        const oldData = JSON.parse(raw);
+        if (!oldData || !Array.isArray(oldData.prods) || !Array.isArray(oldData.exps) || !Array.isArray(oldData.sales)) throw new Error('The old data format is invalid.');
+        const localKey = localGeminiKey() || (oldData.cfg && oldData.cfg.apiKey) || '';
+        if (localKey) localStorage.setItem('anjea_gemini_key', localKey);
+        S = oldData;
+        S.cfg = Object.assign({}, INIT.cfg, S.cfg || {}, {apiKey:localKey});
+        await save();
+        localStorage.setItem('anjea_cloud_migrated_v1','1');
+        document.getElementById('migrationPanel').classList.add('hidden');
+        alert('Transfer complete. This laptop data is now shared securely through Supabase.');
+      } catch (e) { alert('Transfer failed: ' + e.message); }
+    }
+
+    async function loadTeamMembers() {
+      if (!currentUser) return;
+      const { data, error } = await sb.from('anjea_members').select('email,role,created_at').order('created_at');
+      const box = document.getElementById('teamList');
+      if (error) { box.textContent = 'Unable to load team list.'; return; }
+      box.innerHTML = data.map(m => `<div class="flex justify-between border rounded p-1.5"><span>${m.email}</span><b class="text-[#511322]">${m.role}</b></div>`).join('');
+    }
+
+    async function addTeamMember() {
+      const email = document.getElementById('teamEmail').value.trim().toLowerCase();
+      if (!email || !email.includes('@')) return alert('Enter a valid email address.');
+      const { error } = await sb.from('anjea_members').insert({email,role:'member',added_by:currentUser.id});
+      if (error) return alert('Could not add member: ' + error.message);
+      document.getElementById('teamEmail').value = '';
+      await loadTeamMembers();
+      alert('Email approved. She can now use “Create Password” on the login screen.');
+    }
 
     function goTab(t) {
       ['dash','stock','sales','exp','set'].forEach(x => {
@@ -322,6 +505,10 @@
       if (t === 'dash') renderChart();
       if (t === 'set') {
         document.getElementById('cfgApiKey').value = S.cfg.apiKey || '';
+        document.getElementById('cfgCap').value = S.cfg.cap || 15000;
+        document.getElementById('cfgLanded').value = S.cfg.landed || 3.58;
+        loadTeamMembers();
+        showMigrationOption();
       }
     }
 
@@ -436,6 +623,7 @@ Return ONLY raw JSON, enclosed in [ ... ], without markdown backticks. Example:
 
         if (!S.cfg.apiKey && key) {
           S.cfg.apiKey = key;
+          localStorage.setItem('anjea_gemini_key', key);
           save();
         }
 
@@ -673,10 +861,10 @@ Return ONLY raw JSON, enclosed in [ ... ], without markdown backticks. Example:
 
     function saveCfg() {
       S.cfg.apiKey = document.getElementById('cfgApiKey').value.trim();
-      S.cfg.pin = document.getElementById('cfgPin').value || '1985';
+      localStorage.setItem('anjea_gemini_key', S.cfg.apiKey);
       S.cfg.cap = parseFloat(document.getElementById('cfgCap').value) || 15000;
       S.cfg.landed = parseFloat(document.getElementById('cfgLanded').value) || 3.58;
-      save(); alert("Settings and API Key saved!");
+      save(); alert("Settings saved and synchronized. The Gemini key remains only on this device.");
     }
 
     function exportCSV() {
@@ -688,9 +876,21 @@ Return ONLY raw JSON, enclosed in [ ... ], without markdown backticks. Example:
       const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'anjea_financials_invoices.csv'; a.click();
     }
 
-    window.onload = () => {
-      if (sessionStorage.getItem('unlocked') === '1') document.getElementById('pinBox').classList.add('hidden');
+    window.onload = async () => {
       render();
+      const { data:{ session } } = await sb.auth.getSession();
+      if (session && session.user) await startCloud(session.user);
+      else document.getElementById('pinBox').classList.remove('hidden');
+
+      sb.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'PASSWORD_RECOVERY' && session) {
+          const next = prompt('Enter your new password (minimum 6 characters):');
+          if (next && next.length >= 6) {
+            const { error } = await sb.auth.updateUser({password:next});
+            alert(error ? error.message : 'Password updated successfully.');
+          }
+        }
+      });
     };
   </script>
 </body>
