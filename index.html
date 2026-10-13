@@ -10,18 +10,31 @@
 </head>
 <body class="text-stone-800 text-xs">
 
-  <!-- SECURE CLOUD LOGIN -->
+  <!-- SECURE PIN LOGIN -->
   <div id="pinBox" class="fixed inset-0 bg-[#3A0B16] z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xs w-full p-6 text-center shadow-xl space-y-4">
       <div class="w-12 h-12 rounded-full bg-[#511322] mx-auto flex items-center justify-center text-[#C5A880] text-xl font-bold">A</div>
       <div><h2 class="text-lg font-bold text-[#511322]">ANJÉA BOUTIQUE</h2><p class="text-[10px] text-stone-400">Secure Shared Business Hub</p></div>
-      <input type="email" id="authEmail" placeholder="Approved email address" autocomplete="email" class="w-full py-2 px-3 border rounded-xl">
-      <input type="password" id="authPassword" placeholder="Password (minimum 6 characters)" autocomplete="current-password" class="w-full py-2 px-3 border rounded-xl" onkeyup="if(event.key==='Enter')signIn()">
+      <input type="password" inputmode="numeric" pattern="[0-9]*" id="pinInput" placeholder="Enter secure PIN" autocomplete="off" maxlength="10" class="w-full py-2 px-3 border rounded-xl text-center tracking-[0.35em] text-lg" onkeyup="if(event.key==='Enter')unlockPin()">
       <p id="pinErr" class="text-red-500 hidden"></p>
-      <button id="btnSignIn" onclick="signIn()" class="w-full py-2.5 bg-[#511322] text-white font-bold rounded-xl shadow">Sign In</button>
-      <button onclick="signUp()" class="w-full py-2.5 border border-[#511322] text-[#511322] font-bold rounded-xl">First time? Create Password</button>
-      <button onclick="resetPassword()" class="text-[11px] text-stone-500 underline">Forgot password?</button>
-      <p class="text-[10px] text-stone-400">Only approved Anjea team emails can access business data.</p>
+      <button id="btnSignIn" onclick="unlockPin()" class="w-full py-2.5 bg-[#511322] text-white font-bold rounded-xl shadow">Unlock</button>
+      <p class="text-[10px] text-stone-400">The PIN is never displayed or stored in this browser.</p>
+    </div>
+  </div>
+
+  <!-- CHANGE PIN -->
+  <div id="changePinBox" class="fixed inset-0 bg-black/75 z-[60] hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xs w-full p-6 text-center shadow-xl space-y-4">
+      <div class="w-12 h-12 rounded-full bg-[#511322] mx-auto flex items-center justify-center text-[#C5A880] text-xl font-bold">A</div>
+      <div>
+        <h2 class="text-lg font-bold text-[#511322]">CHANGE SECURE PIN</h2>
+        <p id="changePinHelp" class="text-[10px] text-stone-400 mt-1">Choose a private PIN containing 4 to 10 numbers.</p>
+      </div>
+      <input type="password" inputmode="numeric" pattern="[0-9]*" id="newPin" placeholder="New PIN" autocomplete="off" maxlength="10" class="w-full py-2 px-3 border rounded-xl text-center tracking-[0.3em]">
+      <input type="password" inputmode="numeric" pattern="[0-9]*" id="confirmNewPin" placeholder="Confirm new PIN" autocomplete="off" maxlength="10" class="w-full py-2 px-3 border rounded-xl text-center tracking-[0.3em]" onkeyup="if(event.key==='Enter')saveNewPin()">
+      <p id="resetErr" class="text-red-500 hidden"></p>
+      <button id="btnSavePassword" onclick="saveNewPin()" class="w-full py-2.5 bg-[#511322] text-white font-bold rounded-xl shadow">Save New PIN</button>
+      <button id="btnCancelPin" onclick="closeChangePin()" class="text-[11px] text-stone-500 underline">Cancel</button>
     </div>
   </div>
 
@@ -57,7 +70,7 @@
       </div>
 
       <div class="bg-white p-3 rounded-xl border">
-        <div class="flex justify-between font-bold mb-1"><span>$15,000 Capital Recovery (401 pcs Target)</span><span id="rec-pct" class="text-[#511322]">0%</span></div>
+      <div class="flex justify-between font-bold mb-1"><span>$15,000 Capital Recovery</span><span id="rec-pct" class="text-[#511322]">0%</span></div>
         <div class="w-full bg-stone-100 h-2.5 rounded-full overflow-hidden"><div id="rec-bar" class="bg-[#511322] h-full" style="width:0%"></div></div>
         <div class="flex justify-between text-stone-500 mt-1"><span id="rec-got">$0 recovered</span><span id="rec-rem">$15,000 remaining</span></div>
       </div>
@@ -87,12 +100,19 @@
     <section id="view-stock" class="space-y-3 hidden">
       <div class="flex flex-wrap justify-between items-center gap-2">
         <h3 class="font-bold text-base">Purchases & Stock</h3>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
+          <input id="stockSearch" oninput="renderStockTable()" placeholder="Search barcode, invoice code, item, supplier..." class="border rounded-lg px-3 py-1.5 min-w-56 bg-white">
           <button onclick="openM('modalAiScan')" class="bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow">✨ AI Scan Invoice</button>
           <button onclick="openM('modalProd')" class="bg-[#511322] text-white font-bold px-3 py-1.5 rounded-lg">+ Manual Item</button>
         </div>
       </div>
-      <div class="bg-white rounded-xl border overflow-x-auto"><table class="w-full text-left"><thead class="bg-stone-50 border-b text-stone-500"><tr><th class="p-2">Item</th><th class="p-2">Units</th><th class="p-2">Cost</th><th class="p-2">Landed</th><th class="p-2">Price</th><th class="p-2">Margin</th><th class="p-2">Sold</th><th class="p-2">Stock</th><th class="p-2">Invoice</th><th class="p-2 text-right">✕</th></tr></thead><tbody id="tblStock" class="divide-y"></tbody></table></div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div class="bg-white border rounded-xl p-3"><div class="text-stone-400">Total Qty Purchased</div><b id="stock-total" class="text-lg text-[#511322]">0 pcs</b></div>
+        <div class="bg-white border rounded-xl p-3"><div class="text-stone-400">Total Purchase Amount</div><b id="stock-purchase" class="text-lg">$0.00</b></div>
+        <div class="bg-white border rounded-xl p-3"><div class="text-stone-400">Retail Value</div><b id="stock-retail" class="text-lg text-emerald-700">$0</b></div>
+        <div class="bg-white border rounded-xl p-3"><div class="text-stone-400">Potential Profit</div><b id="stock-profit" class="text-lg text-[#C5A880]">$0</b></div>
+      </div>
+      <div class="bg-white rounded-xl border overflow-x-auto"><table class="w-full text-left whitespace-nowrap"><thead class="bg-stone-50 border-b text-stone-500"><tr><th class="p-2">Barcode / Invoice Code</th><th class="p-2">Item</th><th class="p-2">Color</th><th class="p-2">Supplier</th><th class="p-2">Qty</th><th class="p-2">Cost</th><th class="p-2">Landed</th><th class="p-2">Sale Price</th><th class="p-2">Margin</th><th class="p-2">Sold</th><th class="p-2">Stock</th><th class="p-2">Invoice</th><th class="p-2 text-right">Actions</th></tr></thead><tbody id="tblStock" class="divide-y"></tbody></table></div>
     </section>
 
     <!-- SALES -->
@@ -127,10 +147,9 @@
       <button onclick="saveCfg()" class="bg-[#511322] text-white font-bold px-4 py-2 rounded">Save Settings</button>
 
       <div class="border-t pt-3 space-y-2">
-        <h4 class="font-bold text-[#511322]">Team Access</h4>
-        <p class="text-[10px] text-stone-400">Add your wife's email here before she creates her password.</p>
-        <div class="flex gap-2"><input type="email" id="teamEmail" placeholder="wife@email.com" class="flex-1 border p-2 rounded"><button onclick="addTeamMember()" class="bg-[#C5A880] text-[#3A0B16] font-bold px-3 rounded">Add</button></div>
-        <div id="teamList" class="text-[11px] space-y-1"></div>
+        <h4 class="font-bold text-[#511322]">Security</h4>
+        <p class="text-[10px] text-stone-400">Change the shared secure PIN. The PIN is protected and is never shown on screen.</p>
+        <button onclick="openChangePin(false)" class="w-full border border-[#511322] text-[#511322] font-bold px-3 py-2 rounded">Change PIN</button>
       </div>
 
       <div id="migrationPanel" class="hidden border-t pt-3 space-y-2">
@@ -236,6 +255,24 @@
     </div>
   </div>
 
+  <!-- MODAL: EDIT INVENTORY ITEM -->
+  <div id="modalEditProd" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-lg w-full p-4 space-y-3 shadow-xl">
+      <div class="flex justify-between"><h3 class="font-bold text-sm text-[#511322]">Edit Inventory Item</h3><button onclick="closeM('modalEditProd')">✕</button></div>
+      <input type="hidden" id="epId">
+      <div class="grid grid-cols-2 gap-2"><input id="epSku" placeholder="Barcode / Invoice Code" class="border p-2 rounded"><input id="epInvoice" placeholder="Invoice ID" class="border p-2 rounded"></div>
+      <input id="epName" placeholder="Item description" class="w-full border p-2 rounded">
+      <div class="grid grid-cols-2 gap-2"><input id="epColor" placeholder="Color" class="border p-2 rounded"><input id="epSupplier" placeholder="Supplier" class="border p-2 rounded"></div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <label class="text-stone-500">Qty<input type="number" min="0" id="epUnits" class="w-full border p-2 rounded text-stone-800"></label>
+        <label class="text-stone-500">Unit Cost<input type="number" min="0" step="0.01" id="epCost" class="w-full border p-2 rounded text-stone-800"></label>
+        <label class="text-stone-500">Sale Price<input type="number" min="0" step="0.01" id="epPrice" class="w-full border p-2 rounded text-stone-800"></label>
+        <label class="text-stone-500">Sold<input type="number" min="0" id="epSold" class="w-full border p-2 rounded text-stone-800"></label>
+      </div>
+      <div class="flex justify-end gap-2"><button onclick="closeM('modalEditProd')" class="border px-3 py-1.5 rounded">Cancel</button><button onclick="saveProductEdit()" class="bg-[#511322] text-white font-bold px-4 py-1.5 rounded">Save Changes</button></div>
+    </div>
+  </div>
+
   <!-- MODAL: RECORD SALE -->
   <div id="modalSale" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl max-w-xs w-full p-4 space-y-3 shadow-xl">
@@ -294,42 +331,22 @@
 
   <script>
     const INIT = {
-      cfg: { pin:'1985', cap:15000, fee:2.5, del:4.0, landed:3.5833, apiKey:'' },
-      prods: [
-        {id:'p1', name:'Dresses', u:100, cost:18, price:52, sold:0, inv:null},
-        {id:'p2', name:'Two-piece sets', u:80, cost:25, price:68, sold:0, inv:null},
-        {id:'p3', name:'Blazers', u:60, cost:22, price:60, sold:0, inv:null},
-        {id:'p4', name:'Pants', u:80, cost:14, price:40, sold:0, inv:null},
-        {id:'p5', name:'Tops', u:120, cost:10, price:27, sold:0, inv:null},
-        {id:'p6', name:'Shirts & T-shirts', u:80, cost:9, price:25, sold:0, inv:null},
-        {id:'p7', name:'Skirts & bottoms', u:50, cost:12, price:36, sold:0, inv:null},
-        {id:'p8', name:'Accessories', u:30, cost:8, price:24, sold:0, inv:null}
-      ],
-      exps: [
-        {id:'e1', d:'2026-04-01', c:'Turkey Travel', desc:'Flights (2 partners return)', no:'TK-FL89', a:800, inv:null},
-        {id:'e2', d:'2026-04-01', c:'Turkey Travel', desc:'Hotel Istanbul 4 nights', no:'HTL-IST4', a:600, inv:null},
-        {id:'e3', d:'2026-04-02', c:'Turkey Travel', desc:'Local transport & meals', no:'-', a:550, inv:null},
-        {id:'e4', d:'2026-04-05', c:'Freight & Cargo', desc:'Air cargo Turkey to Beirut', no:'AWB-9831', a:900, inv:null},
-        {id:'e5', d:'2026-04-06', c:'Customs & Clearance', desc:'Lebanon Customs clearance', no:'CUST-412', a:900, inv:null},
-        {id:'e6', d:'2026-04-07', c:'Packaging', desc:'Branded shopping bags & tags', no:'PKG-01', a:350, inv:null},
-        {id:'e7', d:'2026-04-10', c:'Marketing', desc:'Launch photoshoot, ads & setup', no:'MKT-01', a:1000, inv:null}
-      ],
+      cfg: { cap:15000, fee:2.5, del:4.0, landed:3.5833, apiKey:'' },
+      prods: [],
+      exps: [],
       sales: []
     };
 
     const SUPABASE_URL = 'https://tzxwihjosrrtcuimvynb.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_mj8IGnRzkuXp9m5L2bvO2A_mSEp6b6e';
-    const APP_URL = 'https://joeboustany.github.io/anjea-hub-/';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
-    });
+    const PIN_API = `${SUPABASE_URL}/functions/v1/anjea-pin-state`;
 
     let S = structuredClone(INIT);
-    let currentUser = null;
+    let activePin = '';
     let cloudReady = false;
-    let realtimeChannel = null;
     let saving = false;
     let saveQueued = false;
+    let pinChangeRequired = false;
 
     function localGeminiKey() { return localStorage.getItem('anjea_gemini_key') || ''; }
     function setAuthError(message) {
@@ -346,109 +363,149 @@
       const data = JSON.parse(JSON.stringify(S));
       if (!data.cfg) data.cfg = {};
       data.cfg.apiKey = '';
+      delete data.cfg.pin;
       return data;
     }
 
-    async function save() {
-      render();
-      if (!cloudReady || !currentUser) return;
-      if (saving) { saveQueued = true; return; }
-      saving = true;
-      setCloudStatus('● Saving…', true);
-      const payload = dataForCloud();
-      const { error } = await sb.from('anjea_app_state').update({
-        data: payload,
-        updated_at: new Date().toISOString(),
-        updated_by: currentUser.id
-      }).eq('id','main');
-      saving = false;
-      if (error) {
-        console.error(error);
-        setCloudStatus('● Sync error', false);
-        alert('Cloud save failed: ' + error.message);
-      } else {
-        localStorage.setItem('anjea_cloud_cache_v1', JSON.stringify(payload));
-        setCloudStatus('● Cloud synced', true);
-      }
-      if (saveQueued) { saveQueued = false; save(); }
+    async function pinRequest(body) {
+      const response = await fetch(PIN_API, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'apikey':SUPABASE_KEY },
+        body:JSON.stringify(body),
+        cache:'no-store'
+      });
+      let result = {};
+      try { result = await response.json(); } catch (_) {}
+      if (!response.ok) throw new Error(result.error || 'Secure cloud connection failed.');
+      return result;
     }
 
-    async function signIn() {
-      setAuthError('');
-      const email = document.getElementById('authEmail').value.trim().toLowerCase();
-      const password = document.getElementById('authPassword').value;
-      if (!email || !password) return setAuthError('Enter your email and password.');
-      document.getElementById('btnSignIn').disabled = true;
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      document.getElementById('btnSignIn').disabled = false;
-      if (error) return setAuthError(error.message);
-      await startCloud(data.user);
-    }
-
-    async function signUp() {
-      setAuthError('');
-      const email = document.getElementById('authEmail').value.trim().toLowerCase();
-      const password = document.getElementById('authPassword').value;
-      if (!email || password.length < 6) return setAuthError('Enter an approved email and a password of at least 6 characters.');
-      const { data, error } = await sb.auth.signUp({ email, password, options:{ emailRedirectTo:APP_URL } });
-      if (error) return setAuthError(error.message);
-      if (data.session) await startCloud(data.user);
-      else alert('Account created. Please open the confirmation email, then return and sign in.');
-    }
-
-    async function resetPassword() {
-      const email = document.getElementById('authEmail').value.trim().toLowerCase();
-      if (!email) return setAuthError('Enter your email first.');
-      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo:APP_URL });
-      if (error) return setAuthError(error.message);
-      alert('Password reset email sent.');
-    }
-
-    async function lock() {
-      if (realtimeChannel) await sb.removeChannel(realtimeChannel);
-      await sb.auth.signOut();
-      currentUser = null; cloudReady = false;
-      document.getElementById('pinBox').classList.remove('hidden');
-      setCloudStatus('● Signed out', false);
-    }
-
-    async function startCloud(user) {
-      if (!user) return;
-      currentUser = user;
-      setCloudStatus('● Connecting…', true);
-      const { data:member, error:memberError } = await sb.from('anjea_members').select('email,role').eq('email', user.email.toLowerCase()).maybeSingle();
-      if (memberError || !member) {
-        await sb.auth.signOut();
-        currentUser = null;
-        return setAuthError('This email is not approved for Anjea Hub. Ask the administrator to add it in Settings.');
-      }
-
-      const { data:row, error } = await sb.from('anjea_app_state').select('data,updated_at').eq('id','main').single();
-      if (error) return setAuthError('Unable to load cloud data: ' + error.message);
-      const cloudData = row && row.data && Object.keys(row.data).length ? row.data : structuredClone(INIT);
-      S = cloudData;
-      S.cfg = Object.assign({}, INIT.cfg, S.cfg || {}, { apiKey:localGeminiKey() });
+    function normaliseCloudData(data) {
+      S = data && Object.keys(data).length ? data : structuredClone(INIT);
+      S.cfg = Object.assign({}, INIT.cfg, S.cfg || {}, { apiKey:localGeminiKey(), pin:'' });
       S.prods = Array.isArray(S.prods) ? S.prods : [];
       S.exps = Array.isArray(S.exps) ? S.exps : [];
       S.sales = Array.isArray(S.sales) ? S.sales : [];
-      cloudReady = true;
+    }
+
+    async function unlockPin() {
+      setAuthError('');
+      const pin = document.getElementById('pinInput').value.trim();
+      if (!/^\d{4,10}$/.test(pin)) return setAuthError('Enter a PIN containing 4 to 10 numbers.');
+      const button = document.getElementById('btnSignIn');
+      button.disabled = true;
+      button.textContent = 'Checking…';
+      try {
+        const result = await pinRequest({ action:'login', pin });
+        activePin = pin;
+        normaliseCloudData(result.data);
+        cloudReady = true;
+        pinChangeRequired = Boolean(result.must_change);
+        localStorage.setItem('anjea_cloud_cache_v1', JSON.stringify(dataForCloud()));
+        if (pinChangeRequired) {
+          openChangePin(true);
+        } else {
+          finishPinUnlock();
+        }
+      } catch (error) {
+        setAuthError(error.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Unlock';
+      }
+    }
+
+    function finishPinUnlock() {
+      document.getElementById('pinInput').value = '';
       document.getElementById('pinBox').classList.add('hidden');
+      document.getElementById('changePinBox').classList.add('hidden');
+      document.getElementById('changePinBox').classList.remove('flex');
       setAuthError('');
       setCloudStatus('● Cloud synced', true);
       render();
       showMigrationOption();
-      await loadTeamMembers();
+    }
 
-      if (realtimeChannel) await sb.removeChannel(realtimeChannel);
-      realtimeChannel = sb.channel('anjea-live-state')
-        .on('postgres_changes', { event:'UPDATE', schema:'public', table:'anjea_app_state', filter:'id=eq.main' }, payload => {
-          if (!payload.new || !payload.new.data) return;
-          const localKey = localGeminiKey();
-          S = payload.new.data;
-          S.cfg = Object.assign({}, INIT.cfg, S.cfg || {}, { apiKey:localKey });
-          render();
-          setCloudStatus('● Live update', true);
-        }).subscribe();
+    function setResetError(message) {
+      const el = document.getElementById('resetErr');
+      el.textContent = message || '';
+      el.classList.toggle('hidden', !message);
+    }
+
+    function openChangePin(required=false) {
+      pinChangeRequired = required;
+      const box = document.getElementById('changePinBox');
+      box.classList.remove('hidden');
+      box.classList.add('flex');
+      document.getElementById('newPin').value = '';
+      document.getElementById('confirmNewPin').value = '';
+      document.getElementById('changePinHelp').textContent = required
+        ? 'For security, replace the initial PIN before continuing.'
+        : 'Choose a private PIN containing 4 to 10 numbers.';
+      document.getElementById('btnCancelPin').classList.toggle('hidden', required);
+      setResetError('');
+      setTimeout(() => document.getElementById('newPin').focus(), 50);
+    }
+
+    function closeChangePin() {
+      if (pinChangeRequired) return;
+      const box = document.getElementById('changePinBox');
+      box.classList.add('hidden');
+      box.classList.remove('flex');
+    }
+
+    async function saveNewPin() {
+      setResetError('');
+      const newPin = document.getElementById('newPin').value.trim();
+      const confirm = document.getElementById('confirmNewPin').value.trim();
+      if (!/^\d{4,10}$/.test(newPin)) return setResetError('New PIN must contain 4 to 10 numbers.');
+      if (newPin === activePin) return setResetError('Choose a PIN different from the current PIN.');
+      if (newPin !== confirm) return setResetError('The two PIN entries do not match.');
+
+      const button = document.getElementById('btnSavePassword');
+      button.disabled = true;
+      button.textContent = 'Saving…';
+      try {
+        await pinRequest({ action:'change_pin', pin:activePin, new_pin:newPin });
+        activePin = newPin;
+        pinChangeRequired = false;
+        button.textContent = 'Save New PIN';
+        finishPinUnlock();
+        alert('Your new PIN was saved securely.');
+      } catch (error) {
+        setResetError(error.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Save New PIN';
+      }
+    }
+
+    function lock() {
+      activePin = '';
+      cloudReady = false;
+      document.getElementById('pinBox').classList.remove('hidden');
+      setCloudStatus('● Locked', false);
+    }
+
+    async function save() {
+      render();
+      if (!cloudReady || !activePin || pinChangeRequired) return;
+      if (saving) { saveQueued = true; return; }
+      saving = true;
+      setCloudStatus('● Saving…', true);
+      const payload = dataForCloud();
+      try {
+        await pinRequest({ action:'save', pin:activePin, data:payload });
+        localStorage.setItem('anjea_cloud_cache_v1', JSON.stringify(payload));
+        setCloudStatus('● Cloud synced', true);
+      } catch (error) {
+        console.error(error);
+        setCloudStatus('● Sync error', false);
+        alert('Cloud save failed: ' + error.message);
+      } finally {
+        saving = false;
+      }
+      if (saveQueued) { saveQueued = false; save(); }
     }
 
     function showMigrationOption() {
@@ -475,24 +532,6 @@
       } catch (e) { alert('Transfer failed: ' + e.message); }
     }
 
-    async function loadTeamMembers() {
-      if (!currentUser) return;
-      const { data, error } = await sb.from('anjea_members').select('email,role,created_at').order('created_at');
-      const box = document.getElementById('teamList');
-      if (error) { box.textContent = 'Unable to load team list.'; return; }
-      box.innerHTML = data.map(m => `<div class="flex justify-between border rounded p-1.5"><span>${m.email}</span><b class="text-[#511322]">${m.role}</b></div>`).join('');
-    }
-
-    async function addTeamMember() {
-      const email = document.getElementById('teamEmail').value.trim().toLowerCase();
-      if (!email || !email.includes('@')) return alert('Enter a valid email address.');
-      const { error } = await sb.from('anjea_members').insert({email,role:'member',added_by:currentUser.id});
-      if (error) return alert('Could not add member: ' + error.message);
-      document.getElementById('teamEmail').value = '';
-      await loadTeamMembers();
-      alert('Email approved. She can now use “Create Password” on the login screen.');
-    }
-
     function goTab(t) {
       ['dash','stock','sales','exp','set'].forEach(x => {
         document.getElementById(`view-${x}`).classList.add('hidden');
@@ -507,7 +546,6 @@
         document.getElementById('cfgApiKey').value = S.cfg.apiKey || '';
         document.getElementById('cfgCap').value = S.cfg.cap || 15000;
         document.getElementById('cfgLanded').value = S.cfg.landed || 3.58;
-        loadTeamMembers();
         showMigrationOption();
       }
     }
@@ -517,7 +555,7 @@
       document.getElementById(id).classList.add('flex');
       if (id === 'modalSale') {
         const sel = document.getElementById('sProd');
-        sel.innerHTML = S.prods.map(p => `<option value="${p.id}">${p.name} (${p.u-p.sold} left)</option>`).join('');
+        sel.innerHTML = S.prods.filter(p => (p.u-p.sold) > 0).map(p => `<option value="${p.id}">${p.sku ? p.sku+' · ' : ''}${p.name} (${p.u-p.sold} left)</option>`).join('');
         document.getElementById('sDate').value = new Date().toISOString().split('T')[0];
         fillPrice();
       } else if (id === 'modalExp') {
@@ -728,7 +766,7 @@ Return ONLY raw JSON, enclosed in [ ... ], without markdown backticks. Example:
       const file = document.getElementById('pInvoiceFile').files[0];
       if (!name) return;
       const inv = await fileToBase64(file);
-      S.prods.push({ id:'p_'+Date.now(), name, u, cost, price, sold:0, inv });
+      S.prods.push({ id:'p_'+Date.now(), sku:'', supplier:'Manual entry', color:'', invoiceId:'', d:new Date().toISOString().split('T')[0], name, u, cost, price, sold:0, inv });
       closeM('modalProd');
       document.getElementById('pName').value = '';
       document.getElementById('pInvoiceFile').value = '';
@@ -783,6 +821,56 @@ Return ONLY raw JSON, enclosed in [ ... ], without markdown backticks. Example:
     }
 
     let myChart = null;
+
+    function esc(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    }
+
+    function renderStockTable() {
+      const q = (document.getElementById('stockSearch')?.value || '').trim().toLowerCase();
+      const filtered = S.prods.filter(p => !q || [p.sku,p.name,p.color,p.supplier,p.invoiceId].some(v => String(v||'').toLowerCase().includes(q)));
+      document.getElementById('tblStock').innerHTML = filtered.map(p => {
+        const landed = Number(p.cost||0) + (S.cfg.landed||3.58);
+        const margin = p.price > 0 ? (((p.price-landed)/p.price)*100).toFixed(0) : '0';
+        const invBtn = p.inv ? `<button onclick="viewInvoiceDoc('prod','${p.id}')" class="bg-[#C5A880]/20 text-[#511322] font-bold px-2 py-0.5 rounded border border-[#C5A880]">📄</button>` : `<span class="text-stone-300">${esc(p.invoiceId||'-')}</span>`;
+        return `<tr class="hover:bg-stone-50">
+          <td class="p-2 font-mono font-bold text-[#511322]">${esc(p.sku||'-')}</td><td class="p-2 font-semibold whitespace-normal min-w-48">${esc(p.name)}</td><td class="p-2">${esc(p.color||'-')}</td><td class="p-2">${esc(p.supplier||'-')}</td>
+          <td class="p-2 text-center">${p.u}</td><td class="p-2">$${Number(p.cost||0).toFixed(2)}</td><td class="p-2">$${landed.toFixed(2)}</td><td class="p-2 font-bold text-[#511322]">$${Number(p.price||0).toFixed(2)}</td><td class="p-2">${margin}%</td><td class="p-2">${p.sold||0}</td><td class="p-2 font-bold">${p.u-(p.sold||0)}</td><td class="p-2">${invBtn}</td>
+          <td class="p-2 text-right"><button onclick="editProduct('${p.id}')" class="text-blue-700 font-bold mr-2">Edit</button><button onclick="deleteProduct('${p.id}')" class="text-red-500">✕</button></td></tr>`;
+      }).join('') || `<tr><td colspan="13" class="p-5 text-center text-stone-400">No matching inventory items</td></tr>`;
+
+      const pieces=S.prods.reduce((a,p)=>a+Number(p.u||0),0);
+      const purchase=S.prods.reduce((a,p)=>a+Number(p.u||0)*Number(p.cost||0),0);
+      const retail=S.prods.reduce((a,p)=>a+Math.max(0,Number(p.u||0)-Number(p.sold||0))*Number(p.price||0),0);
+      const landed=S.prods.reduce((a,p)=>a+Math.max(0,Number(p.u||0)-Number(p.sold||0))*(Number(p.cost||0)+(S.cfg.landed||3.58)),0);
+      document.getElementById('stock-total').innerText=`${pieces.toLocaleString()} pcs`;
+      document.getElementById('stock-purchase').innerText=`$${purchase.toLocaleString(undefined,{maximumFractionDigits:2})}`;
+      document.getElementById('stock-retail').innerText=`$${retail.toLocaleString(undefined,{maximumFractionDigits:2})}`;
+      document.getElementById('stock-profit').innerText=`$${(retail-landed).toLocaleString(undefined,{maximumFractionDigits:2})}`;
+    }
+
+    function editProduct(id) {
+      const p=S.prods.find(x=>x.id===id); if(!p) return;
+      document.getElementById('epId').value=p.id;
+      document.getElementById('epSku').value=p.sku||''; document.getElementById('epInvoice').value=p.invoiceId||'';
+      document.getElementById('epName').value=p.name||''; document.getElementById('epColor').value=p.color||''; document.getElementById('epSupplier').value=p.supplier||'';
+      document.getElementById('epUnits').value=p.u||0; document.getElementById('epCost').value=p.cost||0; document.getElementById('epPrice').value=p.price||0; document.getElementById('epSold').value=p.sold||0;
+      openM('modalEditProd');
+    }
+
+    function saveProductEdit() {
+      const p=S.prods.find(x=>x.id===document.getElementById('epId').value); if(!p) return;
+      p.sku=document.getElementById('epSku').value.trim(); p.invoiceId=document.getElementById('epInvoice').value.trim(); p.name=document.getElementById('epName').value.trim()||'Boutique item';
+      p.color=document.getElementById('epColor').value.trim(); p.supplier=document.getElementById('epSupplier').value.trim();
+      p.u=Math.max(0,parseInt(document.getElementById('epUnits').value)||0); p.cost=Math.max(0,parseFloat(document.getElementById('epCost').value)||0); p.price=Math.max(0,parseFloat(document.getElementById('epPrice').value)||0); p.sold=Math.max(0,parseInt(document.getElementById('epSold').value)||0);
+      closeM('modalEditProd'); save();
+    }
+
+    function deleteProduct(id) {
+      const p=S.prods.find(x=>x.id===id); if(!p) return;
+      if(confirm(`Delete ${p.sku ? p.sku+' · ' : ''}${p.name}?`)){ S.prods=S.prods.filter(x=>x.id!==id); save(); }
+    }
+
     function renderChart() {
       const ctx = document.getElementById('chart');
       if (!ctx) return;
@@ -802,12 +890,7 @@ Return ONLY raw JSON, enclosed in [ ... ], without markdown backticks. Example:
 
     function render() {
       // Stock Table
-      document.getElementById('tblStock').innerHTML = S.prods.map(p => {
-        const landed = p.cost + (S.cfg.landed||3.58);
-        const m = (((p.price - landed)/p.price)*100).toFixed(0);
-        const invBtn = p.inv ? `<button onclick="viewInvoiceDoc('prod','${p.id}')" class="bg-[#C5A880]/20 text-[#511322] font-bold px-2 py-0.5 rounded border border-[#C5A880]">📄 View</button>` : `<span class="text-stone-300">-</span>`;
-        return `<tr><td class="p-2 font-bold">${p.name}</td><td class="p-2">${p.u}</td><td class="p-2">$${p.cost}</td><td class="p-2">$${landed.toFixed(1)}</td><td class="p-2 font-bold text-[#511322]">$${p.price}</td><td class="p-2">${m}%</td><td class="p-2">${p.sold}</td><td class="p-2 font-bold">${p.u-p.sold}</td><td class="p-2">${invBtn}</td><td class="p-2 text-right"><button onclick="S.prods=S.prods.filter(x=>x.id!=='${p.id}');save();" class="text-red-500">✕</button></td></tr>`;
-      }).join('');
+      renderStockTable();
 
       // Sales Table
       document.getElementById('tblSales').innerHTML = S.sales.length ? S.sales.map(s => `<tr><td class="p-2">${s.d}</td><td class="p-2 font-bold">${s.name}</td><td class="p-2">${s.q}</td><td class="p-2 font-bold text-emerald-700">$${s.tot}</td><td class="p-2">${s.pay}</td><td class="p-2 font-bold text-[#511322]">+$${s.net.toFixed(1)}</td><td class="p-2 text-stone-500">${s.cust}</td><td class="p-2 text-right"><button onclick="S.sales=S.sales.filter(x=>x.id!=='${s.id}');save();" class="text-red-500">✕</button></td></tr>`).join('') : `<tr><td colspan="8" class="p-3 text-center text-stone-400">No sales recorded yet</td></tr>`;
@@ -868,29 +951,18 @@ Return ONLY raw JSON, enclosed in [ ... ], without markdown backticks. Example:
     }
 
     function exportCSV() {
-      let csv = "ANJEA BOUTIQUE INVENTORY & EXPENSES\nITEM,UNITS,COST,PRICE,SOLD,STOCK\n";
-      S.prods.forEach(p => { csv += `"${p.name}",${p.u},${p.cost},${p.price},${p.sold},${p.u-p.sold}\n`; });
+      let csv = "ANJEA BOUTIQUE INVENTORY & EXPENSES\nBARCODE / INVOICE CODE,ITEM,COLOR,SUPPLIER,INVOICE,DATE,UNITS,COST,PRICE,SOLD,STOCK\n";
+      S.prods.forEach(p => { csv += `"${p.sku||''}","${p.name}","${p.color||''}","${p.supplier||''}","${p.invoiceId||''}","${p.d||''}",${p.u},${p.cost},${p.price},${p.sold||0},${p.u-(p.sold||0)}\n`; });
       csv += "\nEXPENSES & INVOICES\nDATE,CATEGORY,DESC,INVOICE NO,AMOUNT\n";
       S.exps.forEach(e => { csv += `"${e.d}","${e.c}","${e.desc}","${e.no||''}",${e.a}\n`; });
       const b = new Blob([csv], {type:'text/csv'});
       const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'anjea_financials_invoices.csv'; a.click();
     }
 
-    window.onload = async () => {
+    window.onload = () => {
       render();
-      const { data:{ session } } = await sb.auth.getSession();
-      if (session && session.user) await startCloud(session.user);
-      else document.getElementById('pinBox').classList.remove('hidden');
-
-      sb.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'PASSWORD_RECOVERY' && session) {
-          const next = prompt('Enter your new password (minimum 6 characters):');
-          if (next && next.length >= 6) {
-            const { error } = await sb.auth.updateUser({password:next});
-            alert(error ? error.message : 'Password updated successfully.');
-          }
-        }
-      });
+      document.getElementById('pinBox').classList.remove('hidden');
+      setTimeout(() => document.getElementById('pinInput').focus(), 50);
     };
   </script>
 </body>
